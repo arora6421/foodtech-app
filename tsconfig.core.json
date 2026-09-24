@@ -1,0 +1,9 @@
+{
+  // Pure core: no DOM, no Node. The engine must compile without either.
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.core.tsbuildinfo"
+  },
+  "include": ["src/domain", "src/engine", "src/catalog", "src/location", "src/analytics"],
+  "exclude": ["src/**/*.test.ts"]
+}
