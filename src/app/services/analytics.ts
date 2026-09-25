@@ -33,5 +33,12 @@ export function setAnalyticsSession(id: string | null): void {
 }
 
 export function track(name: EventName, props: EventProps = {}): void {
-  sink.emit({ name, props, ts: Date.now(), sessionId, engineVersion: ENGINE_VERSION, catalogueVersion: MOCK_CATALOGUE_VERSION })
+  sink.emit({
+    name,
+    props,
+    ts: Date.now(),
+    sessionId,
+    engineVersion: ENGINE_VERSION,
+    catalogueVersion: MOCK_CATALOGUE_VERSION,
+  })
 }

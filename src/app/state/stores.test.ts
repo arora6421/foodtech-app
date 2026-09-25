@@ -58,7 +58,10 @@ describe('soloSessionStore', () => {
   })
 
   it('discards a stored session from a different engine version', async () => {
-    sessionStorage.setItem(STORAGE_KEYS.session, JSON.stringify({ engineVersion: 'old', catalogueVersion: 'x', input: {}, events: [], view: { kind: 'match' } }))
+    sessionStorage.setItem(
+      STORAGE_KEYS.session,
+      JSON.stringify({ engineVersion: 'old', catalogueVersion: 'x', input: {}, events: [], view: { kind: 'match' } }),
+    )
     const store = createSoloSessionStore(deps())
     await store.getState().init()
     expect(store.getState().state).toBeNull()
@@ -87,7 +90,9 @@ describe('soloSessionStore', () => {
     store.getState().chooseAlternative()
     expect(matchModel(loaded, store.getState().state!, store.getState().view)!.mode).toBe('chosen-alternative')
     store.getState().returnToMatch()
-    expect(matchModel(loaded, store.getState().state!, store.getState().view)!.hero.archetypeId).toBe(result.hero.archetypeId)
+    expect(matchModel(loaded, store.getState().state!, store.getState().view)!.hero.archetypeId).toBe(
+      result.hero.archetypeId,
+    )
     expect(store.getState().state!.result).toBe(result)
   })
 
@@ -117,7 +122,15 @@ describe('settings and saved stores', () => {
 
   it('saves once per dish and removes', () => {
     const s = createSavedStore()
-    const item = { archetypeId: 'a', offeringId: 'o', archetypeName: 'A', offeringName: 'O', venueName: 'V', priceLabel: '£1.00', tint: '#000000' }
+    const item = {
+      archetypeId: 'a',
+      offeringId: 'o',
+      archetypeName: 'A',
+      offeringName: 'O',
+      venueName: 'V',
+      priceLabel: '£1.00',
+      tint: '#000000',
+    }
     s.getState().save(item)
     s.getState().save(item)
     expect(s.getState().items).toHaveLength(1)

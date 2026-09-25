@@ -16,12 +16,35 @@ export function DebugOverlay() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        style={{ position: 'fixed', right: 8, bottom: 8, zIndex: 100, minHeight: 36, padding: '0 12px', font: '600 12px system-ui', background: '#222', color: '#fff', border: 0, borderRadius: 6 }}
+        style={{
+          position: 'fixed',
+          right: 8,
+          bottom: 8,
+          zIndex: 100,
+          minHeight: 36,
+          padding: '0 12px',
+          font: '600 12px system-ui',
+          background: '#222',
+          color: '#fff',
+          border: 0,
+          borderRadius: 6,
+        }}
       >
         {open ? 'Close debug' : 'Debug'}
       </button>
       {open && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 99, overflow: 'auto', background: 'rgba(255,255,255,.97)', padding: 12, font: '13px system-ui', color: '#222' }}>
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 99,
+            overflow: 'auto',
+            background: 'rgba(255,255,255,.97)',
+            padding: 12,
+            font: '13px system-ui',
+            color: '#222',
+          }}
+        >
           {state ? (
             <SessionView
               state={state}

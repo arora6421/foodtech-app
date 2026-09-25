@@ -8,7 +8,15 @@ import type { SoloEvent, SoloState } from '../../engine/session/types'
 import { track, setAnalyticsSession } from '../services/analytics'
 import { loadCatalogue } from '../services/catalogueService'
 import type { LoadedCatalogue } from '../services/catalogueService'
-import { applyEvent, createSession, makeInput, poolSize, precomputeBranches, restoreSession, undoLast } from '../services/engineAdapter'
+import {
+  applyEvent,
+  createSession,
+  makeInput,
+  poolSize,
+  precomputeBranches,
+  restoreSession,
+  undoLast,
+} from '../services/engineAdapter'
 import type { SessionInputDTO } from '../services/engineAdapter'
 import { readJSON, removeKey, STORAGE_KEYS, writeJSON } from '../services/storage'
 import { settingsStore } from './settingsStore'
@@ -64,7 +72,10 @@ interface PersistedSession {
 }
 
 const isPersisted = (x: unknown): x is PersistedSession =>
-  !!x && typeof x === 'object' && Array.isArray((x as PersistedSession).events) && typeof (x as PersistedSession).input === 'object'
+  !!x &&
+  typeof x === 'object' &&
+  Array.isArray((x as PersistedSession).events) &&
+  typeof (x as PersistedSession).input === 'object'
 
 const randomSeed = () => {
   try {
@@ -99,22 +110,48 @@ export function createSoloSessionStore(deps: SoloStoreDeps = defaultDeps) {
       set({ state: next, view })
       const input = get().input
       if (input) {
-        const persisted: PersistedSession = { engineVersion: ENGINE_VERSION, catalogueVersion: MOCK_CATALOGUE_VERSION, input, events: [...next.events], view }
+        const persisted: PersistedSession = {
+          engineVersion: ENGINE_VERSION,
+          catalogueVersion: MOCK_CATALOGUE_VERSION,
+          input,
+          events: [...next.events],
+          view,
+        }
         writeJSON('session', STORAGE_KEYS.session, persisted)
       }
       if (next.current && !next.result) {
         const c = next.current
-        track('card_shown', { cardIndex: c.cardIndex, archetypeId: c.archetypeId, offeringId: c.offeringId, phase: c.phase, slot: c.slot, eig: Number(c.eig.toFixed(4)), counterShown: next.counter.shown, counterRaw: next.counter.raw })
+        track('card_shown', {
+          cardIndex: c.cardIndex,
+          archetypeId: c.archetypeId,
+          offeringId: c.offeringId,
+          phase: c.phase,
+          slot: c.slot,
+          eig: Number(c.eig.toFixed(4)),
+          counterShown: next.counter.shown,
+          counterRaw: next.counter.raw,
+        })
         deps.schedule(() => {
           if (get().state === next) precomputeBranches(next)
         })
       }
       if (before && next.pivot.used > before.pivot.used) {
         const log = next.pivot.log[next.pivot.log.length - 1]
-        track('pivot_triggered', { cardIndex: next.swipes.length, pivotNumber: next.pivot.used, fromClusterId: log?.fromCluster ?? null, anchorArchetypeId: log?.anchorArchetypeId ?? null })
+        track('pivot_triggered', {
+          cardIndex: next.swipes.length,
+          pivotNumber: next.pivot.used,
+          fromClusterId: log?.fromCluster ?? null,
+          anchorArchetypeId: log?.anchorArchetypeId ?? null,
+        })
       }
       if (next.result && !before?.result) {
-        track('match_shown', { stopReason: next.result.stopReason, swipes: next.result.swipes, confidenceLabel: next.result.confidenceLabel, heroArchetypeId: next.result.hero.archetypeId, m3: Number(next.result.topMass3.toFixed(3)) })
+        track('match_shown', {
+          stopReason: next.result.stopReason,
+          swipes: next.result.swipes,
+          confidenceLabel: next.result.confidenceLabel,
+          heroArchetypeId: next.result.hero.archetypeId,
+          m3: Number(next.result.topMass3.toFixed(3)),
+        })
       }
     }
 
@@ -162,7 +199,13 @@ export function createSoloSessionStore(deps: SoloStoreDeps = defaultDeps) {
         if (poolSize(loaded, input).archetypes === 0) return false
         set({ input, view: { kind: 'match' } })
         setAnalyticsSession(String(input.seed))
-        track('craving_submitted', { moods: craving.moods.join(','), intent: craving.intent, diet: input.context.diet.join(','), budget: input.context.budget, fulfilment: input.context.fulfilment })
+        track('craving_submitted', {
+          moods: craving.moods.join(','),
+          intent: craving.intent,
+          diet: input.context.diet.join(','),
+          budget: input.context.budget,
+          fulfilment: input.context.fulfilment,
+        })
         commit(createSession(loaded, input), null, { kind: 'match' })
         return true
       },

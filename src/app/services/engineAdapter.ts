@@ -29,7 +29,13 @@ export function makeInput(
   seed: number,
 ): SessionInputDTO {
   return {
-    context: { origin, now: now.toISOString(), fulfilment: settings.fulfilment, budget: settings.budget, diet: [...settings.diet] },
+    context: {
+      origin,
+      now: now.toISOString(),
+      fulfilment: settings.fulfilment,
+      budget: settings.budget,
+      diet: [...settings.diet],
+    },
     craving: { moods: [...craving.moods], intent: craving.intent },
     seed,
   }

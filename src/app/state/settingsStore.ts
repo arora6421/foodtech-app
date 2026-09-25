@@ -38,7 +38,9 @@ export function createSettingsStore() {
     setBudget: (budget) => set({ budget }),
     setFulfilment: (fulfilment) => set({ fulfilment }),
   }))
-  store.subscribe((s) => writeJSON('local', STORAGE_KEYS.settings, { diet: s.diet, budget: s.budget, fulfilment: s.fulfilment }))
+  store.subscribe((s) =>
+    writeJSON('local', STORAGE_KEYS.settings, { diet: s.diet, budget: s.budget, fulfilment: s.fulfilment }),
+  )
   return store
 }
 

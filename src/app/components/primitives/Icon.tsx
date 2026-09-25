@@ -28,9 +28,23 @@ const PATHS = {
 
 export type IconName = keyof typeof PATHS
 
-export function Icon({ name, filled = false, className = 'icon' }: { name: IconName; filled?: boolean; className?: string }) {
+export function Icon({
+  name,
+  filled = false,
+  className = 'icon',
+}: {
+  name: IconName
+  filled?: boolean
+  className?: string
+}) {
   return (
-    <svg className={className} viewBox="0 0 24 24" aria-hidden="true" focusable="false" style={filled ? { fill: 'currentColor' } : undefined}>
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      focusable="false"
+      style={filled ? { fill: 'currentColor' } : undefined}
+    >
       {PATHS[name]}
     </svg>
   )

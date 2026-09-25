@@ -57,9 +57,29 @@ export interface CounterModel {
   label: string
 }
 
-const CUISINE_LABEL = (c: string) => c.split('_').map((w) => w[0]!.toUpperCase() + w.slice(1)).join(' ')
-const TEXTURE_WORD: Record<Texture, string> = { crispy: 'Crispy', crunchy: 'Crunchy', saucy: 'Saucy', creamy: 'Creamy', brothy: 'Brothy', chewy: 'Chewy' }
-const FLAVOUR_WORD: Record<Flavour, string> = { umami: 'Savoury', tangy: 'Tangy', sweet: 'Sweet', smoky: 'Smoky', herby: 'Herby', garlicky: 'Garlicky', cheesy: 'Cheesy', aromatic: 'Warm spice' }
+const CUISINE_LABEL = (c: string) =>
+  c
+    .split('_')
+    .map((w) => w[0]!.toUpperCase() + w.slice(1))
+    .join(' ')
+const TEXTURE_WORD: Record<Texture, string> = {
+  crispy: 'Crispy',
+  crunchy: 'Crunchy',
+  saucy: 'Saucy',
+  creamy: 'Creamy',
+  brothy: 'Brothy',
+  chewy: 'Chewy',
+}
+const FLAVOUR_WORD: Record<Flavour, string> = {
+  umami: 'Savoury',
+  tangy: 'Tangy',
+  sweet: 'Sweet',
+  smoky: 'Smoky',
+  herby: 'Herby',
+  garlicky: 'Garlicky',
+  cheesy: 'Cheesy',
+  aromatic: 'Warm spice',
+}
 export const SPICE_WORD = ['No heat', 'Mild', 'Medium', 'Hot', 'Very hot'] as const
 
 export const priceLabel = (pence: number) => `£${(pence / 100).toFixed(2)}`
@@ -94,6 +114,7 @@ export function dishCard(
   const price = priceLabel(o.pricePence)
   const time = timeLabel(v, miles, state.model.context.fulfilment)
   const dist = distanceLabel(miles)
+  const showArchetype = o.name.trim().toLowerCase() !== a.name.trim().toLowerCase()
   const allergens = (o.overrides?.declaredAllergens ?? a.declaredAllergens ?? []).map((x) => x.replace(/_/g, ' '))
   return {
     key: o.id,
@@ -102,7 +123,7 @@ export function dishCard(
     cardNumber,
     offeringName: o.name,
     archetypeName: a.name,
-    showArchetype: o.name.trim().toLowerCase() !== a.name.trim().toLowerCase(),
+    showArchetype,
     cuisineLabel: CUISINE_LABEL(a.cuisine),
     venueName: v.name,
     priceLabel: price,
@@ -113,7 +134,7 @@ export function dishCard(
     tags: tagsFor(a),
     tint: a.image.dominantColour,
     allergens,
-    a11yLabel: `${o.name}. ${a.name}, ${CUISINE_LABEL(a.cuisine)}. ${v.name}, ${price}, ${time}, ${dist}. Spice ${spice} of 4, ${SPICE_WORD[spice].toLowerCase()}.`,
+    a11yLabel: `${o.name}. ${showArchetype ? `${a.name}, ` : ''}${CUISINE_LABEL(a.cuisine)}. ${v.name}, ${price}, ${time}, ${dist}. Spice ${spice} of 4, ${SPICE_WORD[spice].toLowerCase()}.`,
   }
 }
 
@@ -130,7 +151,10 @@ export function counterModel(state: SoloState): CounterModel {
 function reasonsFrom(e: Explanation | undefined): ReasonModel[] {
   if (!e) return []
   return [
-    ...e.reasons.map((r) => ({ text: r.text, kind: r.evidence.fromCraving ? ('craving' as const) : ('swipe' as const) })),
+    ...e.reasons.map((r) => ({
+      text: r.text,
+      kind: r.evidence.fromCraving ? ('craving' as const) : ('swipe' as const),
+    })),
     ...(e.avoided ? [{ text: e.avoided.text, kind: 'avoided' as const }] : []),
   ]
 }
@@ -141,7 +165,11 @@ function otherVenues(state: SoloState, archetypeId: string, exceptOfferingId: st
     .filter((c) => c.offering.id !== exceptOfferingId)
     .sort((x, y) => x.distanceMiles - y.distanceMiles || (x.offering.id < y.offering.id ? -1 : 1))
     .slice(0, 2)
-    .map((c) => ({ venueName: c.venue.name, offeringName: c.offering.name, priceLabel: priceLabel(c.offering.pricePence) }))
+    .map((c) => ({
+      venueName: c.venue.name,
+      offeringName: c.offering.name,
+      priceLabel: priceLabel(c.offering.pricePence),
+    }))
 }
 
 export function matchModel(loaded: LoadedCatalogue, state: SoloState, view: MatchView): MatchModel | null {
@@ -153,7 +181,9 @@ export function matchModel(loaded: LoadedCatalogue, state: SoloState, view: Matc
   const pickList = r.pickList ? r.pickList.map((x) => dishCard(loaded, state, x.archetypeId, x.offeringId, null)) : null
 
   if (view.kind === 'alternative') {
-    const alt = runners.find((c) => c.archetypeId === view.archetypeId) ?? pickList?.find((c) => c.archetypeId === view.archetypeId)
+    const alt =
+      runners.find((c) => c.archetypeId === view.archetypeId) ??
+      pickList?.find((c) => c.archetypeId === view.archetypeId)
     if (alt) {
       const e = explanationFor(state, alt.archetypeId)
       return {
@@ -181,7 +211,11 @@ export function matchModel(loaded: LoadedCatalogue, state: SoloState, view: Matc
     reasons: reasonsFrom(e),
     alsoAt: r.alsoAt.map((id) => {
       const o = loaded.offerings.get(id)!
-      return { venueName: loaded.venues.get(o.venueId)!.name, offeringName: o.name, priceLabel: priceLabel(o.pricePence) }
+      return {
+        venueName: loaded.venues.get(o.venueId)!.name,
+        offeringName: o.name,
+        priceLabel: priceLabel(o.pricePence),
+      }
     }),
     alternatives: runners,
     primaryAction,

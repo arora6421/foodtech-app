@@ -7,23 +7,41 @@
  */
 
 /* Fonts: bundled locally, no third-party requests. SIL OFL; licences alongside. Subsetting to woff2 is an M1.7 task. */
-@font-face { font-family: 'Fraunces'; src: url('./fonts/Fraunces.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
-@font-face { font-family: 'Fraunces'; src: url('./fonts/Fraunces-Italic.ttf') format('truetype'); font-weight: 100 900; font-style: italic; font-display: swap; }
-@font-face { font-family: 'Instrument Sans'; src: url('./fonts/InstrumentSans.ttf') format('truetype'); font-weight: 400 700; font-stretch: 75% 100%; font-display: swap; }
+@font-face {
+  font-family: 'Fraunces';
+  src: url('./fonts/Fraunces.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Fraunces';
+  src: url('./fonts/Fraunces-Italic.ttf') format('truetype');
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Instrument Sans';
+  src: url('./fonts/InstrumentSans.ttf') format('truetype');
+  font-weight: 400 700;
+  font-stretch: 75% 100%;
+  font-display: swap;
+}
 
 @theme {
   /* colour roles (contrast verified in docs/design/index.html) */
-  --color-canvas: #F3ECDF;      /* page background: warm paper */
-  --color-raised: #FBF7EF;      /* raised paper: cards, sheets, receipt */
-  --color-ink: #1D1A16;         /* text, primary button, NOPE (14.8:1 on canvas) */
-  --color-ink-muted: #5E564C;   /* secondary text (6.1:1 on canvas) */
-  --color-rule: #CFC3AE;        /* hairlines only (decorative) */
-  --color-accent: #B53A25;      /* paprika: emphasis, YES, heat (5.0:1 on canvas) */
-  --color-on-accent: #FBF7EF;
-  --color-yes: #B53A25;
-  --color-no: #1D1A16;
-  --color-heat: #B53A25;
-  --color-focus: #1D1A16;
+  --color-canvas: #f3ecdf; /* page background: warm paper */
+  --color-raised: #fbf7ef; /* raised paper: cards, sheets, receipt */
+  --color-ink: #1d1a16; /* text, primary button, NOPE (14.8:1 on canvas) */
+  --color-ink-muted: #5e564c; /* secondary text (6.1:1 on canvas) */
+  --color-rule: #cfc3ae; /* hairlines only (decorative) */
+  --color-accent: #b53a25; /* paprika: emphasis, YES, heat (5.0:1 on canvas) */
+  --color-on-accent: #fbf7ef;
+  --color-yes: #b53a25;
+  --color-no: #1d1a16;
+  --color-heat: #b53a25;
+  --color-focus: #1d1a16;
 
   /* type families */
   --font-display: 'Fraunces', Georgia, 'Times New Roman', serif;

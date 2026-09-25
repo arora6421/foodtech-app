@@ -1,0 +1,132 @@
+// @vitest-environment jsdom
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MotionGlobalConfig } from 'motion/react'
+import { MemoryRouter, Route, Routes } from 'react-router'
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
+import { savedStore } from '../state/savedStore'
+import { soloSessionStore } from '../state/soloSessionStore'
+import { matchModel } from '../state/viewModels'
+import { MatchScreen } from './MatchScreen'
+
+beforeAll(() => {
+  MotionGlobalConfig.skipAnimations = true
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(new Date('2026-09-24T19:30:00Z'))
+})
+
+async function finishSession(pattern: (i: number) => 'yes' | 'no' = (i) => (i % 3 === 0 ? 'yes' : 'no')) {
+  const s = soloSessionStore.getState()
+  await s.init()
+  s.reset()
+  s.start({ moods: ['comforting'], intent: 'normal' })
+  for (let i = 0; i < 20 && !soloSessionStore.getState().state!.result; i++)
+    soloSessionStore.getState().swipe(pattern(i))
+}
+
+beforeEach(async () => {
+  sessionStorage.clear()
+  localStorage.clear()
+  for (const i of savedStore.getState().items) savedStore.getState().remove(i.id)
+  await finishSession()
+})
+
+afterEach(cleanup)
+
+const model = () => {
+  const { loaded, state, view } = soloSessionStore.getState()
+  return matchModel(loaded!, state!, view)!
+}
+
+function renderMatch() {
+  return render(
+    <MemoryRouter initialEntries={['/match']}>
+      <Routes>
+        <Route path="/match" element={<MatchScreen />} />
+        <Route path="/deck" element={<p>deck screen</p>} />
+        <Route path="/craving" element={<p>craving screen</p>} />
+      </Routes>
+    </MemoryRouter>,
+  )
+}
+
+describe('MatchScreen', () => {
+  it('shows the engine hero with exactly the engine’s reasons, nothing added', () => {
+    renderMatch()
+    const m = model()
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(m.hero.archetypeName)
+    const shown = [...document.querySelectorAll('.reasons li')].map((li) => li.textContent)
+    expect(shown).toEqual(m.reasons.map((r) => r.text))
+    expect(screen.getByText(m.confidenceLabel)).toBeTruthy()
+  })
+
+  it('moves focus to the heading on arrival', () => {
+    renderMatch()
+    expect(document.activeElement).toBe(screen.getByRole('heading', { level: 1 }))
+  })
+
+  it('inspects an alternative without offering “Show me something else”, then chooses or returns', async () => {
+    const user = userEvent.setup()
+    renderMatch()
+    const hero = model().hero.archetypeName
+    const engine = soloSessionStore.getState().state!
+    const tile = document.querySelector<HTMLButtonElement>('.alt-tile')
+    expect(tile).not.toBeNull()
+    await user.click(tile!)
+
+    expect(screen.getByText('Alternative')).toBeTruthy()
+    expect(screen.getByText('Why it could suit you')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Choose this instead' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Show me something else' })).toBeNull()
+    // Inspection is UI-only: the engine state (result and event log) is the very same object.
+    expect(soloSessionStore.getState().state).toBe(engine)
+
+    await user.click(screen.getByRole('button', { name: 'Choose this instead' }))
+    expect(soloSessionStore.getState().state).toBe(engine)
+    expect(screen.getByRole('button', { name: 'Order' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Show me something else' })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: 'Return to our match' }))
+    expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(hero)
+    expect(screen.getByRole('button', { name: 'Show me something else' })).toBeTruthy()
+  })
+
+  it('Save is a stable-label toggle', async () => {
+    const user = userEvent.setup()
+    renderMatch()
+    const save = screen.getByRole('button', { name: 'Save' })
+    expect(save.getAttribute('aria-pressed')).toBe('false')
+    await user.click(save)
+    expect(screen.getByRole('button', { name: 'Save' }).getAttribute('aria-pressed')).toBe('true')
+    expect(savedStore.getState().items).toHaveLength(1)
+  })
+
+  it('opens the Order hand-off for the hero’s venue and returns focus on Escape', async () => {
+    const user = userEvent.setup()
+    renderMatch()
+    const order = screen.getByRole('button', { name: 'Order' })
+    await user.click(order)
+    const dialog = screen.getByRole('dialog')
+    expect(within(dialog).getByText(`Order from ${model().hero.venueName}`)).toBeTruthy()
+    await user.keyboard('{Escape}')
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    expect(document.activeElement).toBe(order)
+  })
+
+  it('“Show me something else” goes back to the deck', async () => {
+    const user = userEvent.setup()
+    renderMatch()
+    await user.click(screen.getByRole('button', { name: 'Show me something else' }))
+    expect(await screen.findByText('deck screen')).toBeTruthy()
+  })
+
+  it('a second “Show me something else” offers the pick list', async () => {
+    const s = soloSessionStore.getState()
+    s.notQuite()
+    for (let i = 0; i < 20 && !soloSessionStore.getState().state!.result; i++) soloSessionStore.getState().swipe('no')
+    soloSessionStore.getState().notQuite()
+    renderMatch()
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Pick one of these')
+    expect(screen.queryByRole('button', { name: 'Show me something else' })).toBeNull()
+  })
+})

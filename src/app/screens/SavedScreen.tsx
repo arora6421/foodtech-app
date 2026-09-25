@@ -33,7 +33,12 @@ export function SavedScreen() {
                 model={i}
                 onClick={() => navigate(`/saved/${encodeURIComponent(i.id)}`)}
                 action={
-                  <button type="button" className="icon-btn" aria-label={`${copy.saved.remove} ${i.archetypeName}`} onClick={() => remove(i.id)}>
+                  <button
+                    type="button"
+                    className="icon-btn"
+                    aria-label={`${copy.saved.remove} ${i.archetypeName}`}
+                    onClick={() => remove(i.id)}
+                  >
                     <Icon name="close" />
                   </button>
                 }
@@ -65,7 +70,9 @@ export function SavedDetailScreen() {
             {item.archetypeName}
           </h1>
           <p className="t-body" style={{ margin: 0 }}>
-            {item.offeringName.toLowerCase() === item.archetypeName.toLowerCase() ? item.venueName : `${item.offeringName} · ${item.venueName}`}
+            {item.offeringName.toLowerCase() === item.archetypeName.toLowerCase()
+              ? item.venueName
+              : `${item.offeringName} · ${item.venueName}`}
           </p>
           <p className="t-price" style={{ margin: '8px 0 4px' }}>
             {item.priceLabel}

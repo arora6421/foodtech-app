@@ -44,7 +44,14 @@ const clusteringCache = new Map<string, ReturnType<typeof clusterArchetypes>>()
 function start(context: SessionContext, craving: CravingSelection, seed: number, config: EngineConfig): SoloState {
   const key = `${config.clusterCount}`
   if (!clusteringCache.has(key)) clusteringCache.set(key, clusterArchetypes(MOCK_CATALOGUE, config))
-  return createSoloSession({ catalogue: MOCK_CATALOGUE, context, craving, seed, config, clustering: clusteringCache.get(key)! })
+  return createSoloSession({
+    catalogue: MOCK_CATALOGUE,
+    context,
+    craving,
+    seed,
+    config,
+    clustering: clusteringCache.get(key)!,
+  })
 }
 
 const pounds = (pence: number) => `£${(pence / 100).toFixed(2)}`
@@ -71,7 +78,13 @@ export function DebugPanel() {
   const begin = () =>
     setState(
       start(
-        { origin: ANGEL_N1, now: new Date(setup.now), fulfilment: setup.fulfilment, budget: setup.budget, diet: setup.diet },
+        {
+          origin: ANGEL_N1,
+          now: new Date(setup.now),
+          fulfilment: setup.fulfilment,
+          budget: setup.budget,
+          diet: setup.diet,
+        },
         { moods: setup.moods, intent: setup.intent },
         setup.seed,
         config,
@@ -96,7 +109,16 @@ export function DebugPanel() {
   }
 
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif', fontSize: 13, padding: 16, display: 'grid', gap: 16, gridTemplateColumns: 'minmax(260px, 320px) 1fr' }}>
+    <div
+      style={{
+        fontFamily: 'system-ui, sans-serif',
+        fontSize: 13,
+        padding: 16,
+        display: 'grid',
+        gap: 16,
+        gridTemplateColumns: 'minmax(260px, 320px) 1fr',
+      }}
+    >
       <section>
         <h2 style={{ marginTop: 0 }}>Engine debug panel</h2>
         <fieldset>
@@ -107,7 +129,10 @@ export function DebugPanel() {
                 type="checkbox"
                 checked={setup.moods.includes(m)}
                 onChange={() =>
-                  setSetup((s) => ({ ...s, moods: s.moods.includes(m) ? s.moods.filter((x) => x !== m) : [...s.moods, m].slice(-2) }))
+                  setSetup((s) => ({
+                    ...s,
+                    moods: s.moods.includes(m) ? s.moods.filter((x) => x !== m) : [...s.moods, m].slice(-2),
+                  }))
                 }
               />
               {m}
@@ -115,7 +140,10 @@ export function DebugPanel() {
           ))}
           <div>
             Intent:{' '}
-            <select value={setup.intent} onChange={(e) => setSetup((s) => ({ ...s, intent: e.target.value as Intent }))}>
+            <select
+              value={setup.intent}
+              onChange={(e) => setSetup((s) => ({ ...s, intent: e.target.value as Intent }))}
+            >
               <option value="normal">normal</option>
               <option value="something_new">something new</option>
               <option value="no_idea">no idea</option>
@@ -129,29 +157,47 @@ export function DebugPanel() {
               <input
                 type="checkbox"
                 checked={setup.diet.includes(d)}
-                onChange={() => setSetup((s) => ({ ...s, diet: s.diet.includes(d) ? s.diet.filter((x) => x !== d) : [...s.diet, d] }))}
+                onChange={() =>
+                  setSetup((s) => ({ ...s, diet: s.diet.includes(d) ? s.diet.filter((x) => x !== d) : [...s.diet, d] }))
+                }
               />
               {d}
             </label>
           ))}
           <div>
             Budget{' '}
-            <select value={setup.budget} onChange={(e) => setSetup((s) => ({ ...s, budget: e.target.value as Budget }))}>
+            <select
+              value={setup.budget}
+              onChange={(e) => setSetup((s) => ({ ...s, budget: e.target.value as Budget }))}
+            >
               {['any', 'low', 'mid', 'high'].map((b) => (
                 <option key={b}>{b}</option>
               ))}
             </select>{' '}
             Eating{' '}
-            <select value={setup.fulfilment} onChange={(e) => setSetup((s) => ({ ...s, fulfilment: e.target.value as Fulfilment }))}>
+            <select
+              value={setup.fulfilment}
+              onChange={(e) => setSetup((s) => ({ ...s, fulfilment: e.target.value as Fulfilment }))}
+            >
               {['either', 'delivery', 'go_out'].map((f) => (
                 <option key={f}>{f}</option>
               ))}
             </select>
           </div>
           <div>
-            Seed <input type="number" value={setup.seed} style={{ width: 60 }} onChange={(e) => setSetup((s) => ({ ...s, seed: Number(e.target.value) }))} />{' '}
+            Seed{' '}
+            <input
+              type="number"
+              value={setup.seed}
+              style={{ width: 60 }}
+              onChange={(e) => setSetup((s) => ({ ...s, seed: Number(e.target.value) }))}
+            />{' '}
             <label>
-              <input type="checkbox" checked={setup.now === MORNING} onChange={(e) => setSetup((s) => ({ ...s, now: e.target.checked ? MORNING : EVENING }))} />
+              <input
+                type="checkbox"
+                checked={setup.now === MORNING}
+                onChange={(e) => setSetup((s) => ({ ...s, now: e.target.checked ? MORNING : EVENING }))}
+              />
               morning
             </label>
           </div>
@@ -203,26 +249,55 @@ export function DebugPanel() {
         </fieldset>
       </section>
 
-      {state ? <SessionView state={state} send={send} onUndo={() => setState(undo(state))} /> : <p>Start a session or load a transcript.</p>}
+      {state ? (
+        <SessionView state={state} send={send} onUndo={() => setState(undo(state))} />
+      ) : (
+        <p>Start a session or load a transcript.</p>
+      )}
     </div>
   )
 }
 
-export function SessionView({ state, send, onUndo }: { state: SoloState; send: (e: SoloEvent) => void; onUndo: () => void }) {
+export function SessionView({
+  state,
+  send,
+  onUndo,
+}: {
+  state: SoloState
+  send: (e: SoloEvent) => void
+  onUndo: () => void
+}) {
   const { pool, config, clustering, context } = state.model
   const card = state.current
-  const candidate = card ? pool.byArchetype.get(card.archetypeId)!.find((c) => c.offering.id === card.offeringId)! : null
+  const candidate = card
+    ? pool.byArchetype.get(card.archetypeId)!.find((c) => c.offering.id === card.offeringId)!
+    : null
   const b = useMemo(() => currentBelief(state), [state])
-  const topBelief = b.ids.map((id, i) => ({ id, p: b.probs[i]! })).sort((x, y) => y.p - x.p).slice(0, 10)
+  const topBelief = b.ids
+    .map((id, i) => ({ id, p: b.probs[i]! }))
+    .sort((x, y) => y.p - x.p)
+    .slice(0, 10)
   const features = [...state.profile.features.keys()]
-    .map((f) => ({ f, p: pref(state.profile, f, config), c: confidence(state.profile, f, config), v: view(state.profile, f, config.gamma) }))
+    .map((f) => ({
+      f,
+      p: pref(state.profile, f, config),
+      c: confidence(state.profile, f, config),
+      v: view(state.profile, f, config.gamma),
+    }))
     .sort((x, y) => y.p - x.p)
   const explanation = explainResult(state)
   const top = state.lastCheck?.top
   const topCluster = top ? clustering.clusterOf.get(top) : undefined
 
   return (
-    <section style={{ display: 'grid', gap: 12, gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', alignContent: 'start' }}>
+    <section
+      style={{
+        display: 'grid',
+        gap: 12,
+        gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        alignContent: 'start',
+      }}
+    >
       <div style={{ border: '1px solid #ccc', padding: 12 }}>
         <h3 style={{ marginTop: 0 }}>
           {pool.candidates.length} dishes → {state.counter.shown} likely <small>(raw {state.counter.raw})</small>
@@ -232,11 +307,13 @@ export function SessionView({ state, send, onUndo }: { state: SoloState; send: (
             <div style={{ fontSize: 18, fontWeight: 600 }}>{candidate.offering.name}</div>
             <div>
               {candidate.archetype.name} · {candidate.venue.name} · {pounds(candidate.offering.pricePence)} ·{' '}
-              {distanceMiles(context.origin, candidate.venue.location).toFixed(1)} mi · spice {candidate.vector.has('spice:4') ? 4 : candidate.archetype.axes.spice}
+              {distanceMiles(context.origin, candidate.venue.location).toFixed(1)} mi · spice{' '}
+              {candidate.vector.has('spice:4') ? 4 : candidate.archetype.axes.spice}
             </div>
             <div style={{ color: '#666' }}>
               card {card.cardIndex + 1} · {card.phase} / {card.slot}
-              {card.flattened ? ' · flattened' : ''} · EIG {card.eig.toFixed(3)} · rank {card.finalRank.toFixed(3)} · value {card.value.toFixed(3)}
+              {card.flattened ? ' · flattened' : ''} · EIG {card.eig.toFixed(3)} · rank {card.finalRank.toFixed(3)} ·
+              value {card.value.toFixed(3)}
             </div>
             <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <button onClick={() => send({ type: 'swipe', verdict: 'no' })}>✗ NOPE</button>
@@ -257,7 +334,9 @@ export function SessionView({ state, send, onUndo }: { state: SoloState; send: (
             <div style={{ fontSize: 18 }}>{pool.archetypes.get(state.result.hero.archetypeId)!.name}</div>
             <div>runners-up: {state.result.runnersUp.map((r) => r.archetypeId).join(', ')}</div>
             <div>also at: {state.result.alsoAt.join(', ') || '—'}</div>
-            {state.result.pickList && <div>pick list: {state.result.pickList.map((r) => r.archetypeId).join(', ')}</div>}
+            {state.result.pickList && (
+              <div>pick list: {state.result.pickList.map((r) => r.archetypeId).join(', ')}</div>
+            )}
             {explanation && (
               <div style={{ marginTop: 8 }}>
                 <em>{explanation.headline}</em>
@@ -273,13 +352,15 @@ export function SessionView({ state, send, onUndo }: { state: SoloState; send: (
                   ))}
                   {explanation.avoided && (
                     <li>
-                      {explanation.avoided.text} <small style={{ color: '#666' }}>[{explanation.avoided.featureId}]</small>
+                      {explanation.avoided.text}{' '}
+                      <small style={{ color: '#666' }}>[{explanation.avoided.featureId}]</small>
                     </li>
                   )}
                 </ul>
               </div>
             )}
-            <button onClick={() => send({ type: 'not_quite' })}>Not quite</button> <button onClick={onUndo}>Undo</button>
+            <button onClick={() => send({ type: 'not_quite' })}>Not quite</button>{' '}
+            <button onClick={onUndo}>Undo</button>
           </div>
         )}
       </div>
@@ -288,8 +369,9 @@ export function SessionView({ state, send, onUndo }: { state: SoloState; send: (
         <h4 style={{ marginTop: 0 }}>Stop rule</h4>
         {state.lastCheck ? (
           <div>
-            top <b>{state.lastCheck.top}</b> · top-3 mass {state.lastCheck.topMass3.toFixed(2)} (≥ {config.confidentMass}) · support{' '}
-            {String(state.lastCheck.support)} · stable {String(state.lastCheck.stable)} · swipes {state.swipes.length} (min {config.minSwipes}, max{' '}
+            top <b>{state.lastCheck.top}</b> · top-3 mass {state.lastCheck.topMass3.toFixed(2)} (≥{' '}
+            {config.confidentMass}) · support {String(state.lastCheck.support)} · stable{' '}
+            {String(state.lastCheck.stable)} · swipes {state.swipes.length} (min {config.minSwipes}, max{' '}
             {config.maxSwipes + state.notQuite.extension})
           </div>
         ) : (
@@ -297,8 +379,8 @@ export function SessionView({ state, send, onUndo }: { state: SoloState; send: (
         )}
         <h4>Silent pivot</h4>
         <div>
-          streak {state.pivot.streak}/{config.pivotStreak} · used {state.pivot.used}/{config.maxPivots} · flatten {state.pivot.flattenRemaining} · anchor pending{' '}
-          {String(state.pivot.anchorPending)}
+          streak {state.pivot.streak}/{config.pivotStreak} · used {state.pivot.used}/{config.maxPivots} · flatten{' '}
+          {state.pivot.flattenRemaining} · anchor pending {String(state.pivot.anchorPending)}
         </div>
         {state.pivot.log.map((l, i) => (
           <div key={i}>
@@ -308,12 +390,15 @@ export function SessionView({ state, send, onUndo }: { state: SoloState; send: (
         <h4>Clusters</h4>
         <div>
           current: {topCluster ?? '—'}
-          {topCluster !== undefined && ` (medoid ${clustering.clusters[topCluster]!.medoid}: ${clustering.clusters[topCluster]!.members.join(', ')})`}
+          {topCluster !== undefined &&
+            ` (medoid ${clustering.clusters[topCluster]!.medoid}: ${clustering.clusters[topCluster]!.members.join(', ')})`}
         </div>
       </div>
 
       <div style={{ border: '1px solid #ccc', padding: 12 }}>
-        <h4 style={{ marginTop: 0 }}>Belief (top 10, H = {b.ids.length}, entropy {b.entropy.toFixed(2)})</h4>
+        <h4 style={{ marginTop: 0 }}>
+          Belief (top 10, H = {b.ids.length}, entropy {b.entropy.toFixed(2)})
+        </h4>
         {topBelief.map(({ id, p }) => (
           <div key={id}>
             {bar(p, '#4a7')} {(p * 100).toFixed(1)}% {id}
@@ -356,7 +441,10 @@ export function SessionView({ state, send, onUndo }: { state: SoloState; send: (
         <ol>
           {state.swipes.map((r) => (
             <li key={r.card.cardIndex}>
-              {r.verdict === 'no' ? '✗' : '✓'} {r.card.archetypeId} <small style={{ color: '#666' }}>({r.card.phase}/{r.card.slot})</small>
+              {r.verdict === 'no' ? '✗' : '✓'} {r.card.archetypeId}{' '}
+              <small style={{ color: '#666' }}>
+                ({r.card.phase}/{r.card.slot})
+              </small>
             </li>
           ))}
         </ol>

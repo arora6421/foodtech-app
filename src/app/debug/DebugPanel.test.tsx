@@ -17,7 +17,13 @@ describe('debug panel (MVP_SPEC §4 D1)', () => {
       catalogue: MOCK_CATALOGUE,
       seed: 1,
       craving: { moods: ['spicy'], intent: 'normal' },
-      context: { origin: ANGEL_N1, now: new Date('2026-09-24T19:30:00Z'), fulfilment: 'either', budget: 'any', diet: [] },
+      context: {
+        origin: ANGEL_N1,
+        now: new Date('2026-09-24T19:30:00Z'),
+        fulfilment: 'either',
+        budget: 'any',
+        diet: [],
+      },
     })
     expect(renderToString(<SessionView state={s} send={noop} onUndo={noop} />)).toContain('NOPE')
     while (!s.result) {

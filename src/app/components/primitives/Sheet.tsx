@@ -6,9 +6,20 @@ import { Icon } from './Icon'
 // A modal bottom sheet (m1-spec §2.2): focus moves in on open, is trapped while open, Escape and the
 // backdrop close it, and focus returns to whatever opened it.
 
-const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
+const FOCUSABLE =
+  'button:not([disabled]), [href], input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])'
 
-export function Sheet({ open, title, onClose, children }: { open: boolean; title: string; onClose: () => void; children: ReactNode }) {
+export function Sheet({
+  open,
+  title,
+  onClose,
+  children,
+}: {
+  open: boolean
+  title: string
+  onClose: () => void
+  children: ReactNode
+}) {
   const ref = useRef<HTMLDivElement>(null)
   const titleId = useId()
 

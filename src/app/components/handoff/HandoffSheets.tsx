@@ -8,7 +8,17 @@ import { Sheet } from '../primitives/Sheet'
 
 const PLATFORMS = ['Deliveroo', 'Uber Eats'] as const
 
-export function OrderSheet({ open, onClose, venueName, offeringName }: { open: boolean; onClose: () => void; venueName: string; offeringName: string }) {
+export function OrderSheet({
+  open,
+  onClose,
+  venueName,
+  offeringName,
+}: {
+  open: boolean
+  onClose: () => void
+  venueName: string
+  offeringName: string
+}) {
   const [opened, setOpened] = useState<string | null>(null)
   const close = () => {
     setOpened(null)
@@ -44,7 +54,19 @@ export function OrderSheet({ open, onClose, venueName, offeringName }: { open: b
   )
 }
 
-export function DirectionsSheet({ open, onClose, venueName, timeLabel, distanceLabel }: { open: boolean; onClose: () => void; venueName: string; timeLabel: string; distanceLabel: string }) {
+export function DirectionsSheet({
+  open,
+  onClose,
+  venueName,
+  timeLabel,
+  distanceLabel,
+}: {
+  open: boolean
+  onClose: () => void
+  venueName: string
+  timeLabel: string
+  distanceLabel: string
+}) {
   const [opened, setOpened] = useState(false)
   const close = () => {
     setOpened(false)

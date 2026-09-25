@@ -28,7 +28,8 @@ export const copy = {
     diet: 'Diet',
     budget: 'Budget',
     eating: 'Eating',
-    tooTight: (n: number) => `Only ${n} ${n === 1 ? 'dish fits' : 'dishes fit'} these settings, so there's less to choose from. You can still carry on.`,
+    tooTight: (n: number) =>
+      `Only ${n} ${n === 1 ? 'dish fits' : 'dishes fit'} these settings, so there's less to choose from. You can still carry on.`,
     none: 'No dishes match these settings. Try a wider budget or a different eating option.',
   },
   moods: {
@@ -52,7 +53,8 @@ export const copy = {
   fulfilment: { either: 'Either', delivery: 'Delivery', go_out: 'Going out' } satisfies Record<Fulfilment, string>,
   sheets: {
     dietTitle: 'Diet',
-    dietBody: 'We only show dishes that fit. Allergens are shown only when a venue lists them; always check with the venue.',
+    dietBody:
+      'We only show dishes that fit. Allergens are shown only when a venue lists them; always check with the venue.',
     budgetTitle: 'Budget',
     eatingTitle: 'Eating',
     done: 'Done',
@@ -66,6 +68,8 @@ export const copy = {
     yes: 'Yes',
     theOne: "That's the one",
     cardHint: 'Arrow right for yes, arrow left for nope, Enter for that’s the one.',
+    heading: (name: string, n: number) => `${name}, card ${n}`,
+    announce: (n: number, label: string, left: number) => `Card ${n}. ${label} ${left} dishes left.`,
     spice: (n: number, word: string) => `Spice ${n} of 4, ${word.toLowerCase()}`,
     allergens: 'Listed allergens',
   },

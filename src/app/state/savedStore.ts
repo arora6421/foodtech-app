@@ -24,7 +24,14 @@ export interface SavedState {
 }
 
 const isList = (x: unknown): x is SavedMatch[] =>
-  Array.isArray(x) && x.every((i) => i && typeof i === 'object' && typeof (i as SavedMatch).id === 'string' && typeof (i as SavedMatch).archetypeId === 'string')
+  Array.isArray(x) &&
+  x.every(
+    (i) =>
+      i &&
+      typeof i === 'object' &&
+      typeof (i as SavedMatch).id === 'string' &&
+      typeof (i as SavedMatch).archetypeId === 'string',
+  )
 
 export const savedId = (archetypeId: string, offeringId: string) => `${archetypeId}::${offeringId}`
 

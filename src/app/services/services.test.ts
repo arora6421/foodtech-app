@@ -2,7 +2,15 @@ import { describe, expect, it } from 'vitest'
 import { soloReducer } from '../../engine/session/solo'
 import { ANGEL_N1 } from '../../location/LocationProvider'
 import { loadCatalogue } from './catalogueService'
-import { applyEvent, createSession, makeInput, nextCards, poolSize, precomputeBranches, restoreSession } from './engineAdapter'
+import {
+  applyEvent,
+  createSession,
+  makeInput,
+  nextCards,
+  poolSize,
+  precomputeBranches,
+  restoreSession,
+} from './engineAdapter'
 import { readJSON, writeJSON } from './storage'
 
 const NOW = new Date('2026-09-24T19:30:00Z')
@@ -43,7 +51,10 @@ describe('engineAdapter (read-only consumer of the frozen engine)', () => {
   it('poolSize reflects the hard filters', async () => {
     const loaded = await loadCatalogue()
     const all = poolSize(loaded, input)
-    const vegan = poolSize(loaded, makeInput(ANGEL_N1, NOW, { ...settings, diet: ['vegan'] }, { moods: [], intent: 'normal' }, 1))
+    const vegan = poolSize(
+      loaded,
+      makeInput(ANGEL_N1, NOW, { ...settings, diet: ['vegan'] }, { moods: [], intent: 'normal' }, 1),
+    )
     expect(vegan.archetypes).toBeLessThan(all.archetypes)
     expect(vegan.archetypes).toBeGreaterThan(0)
   })

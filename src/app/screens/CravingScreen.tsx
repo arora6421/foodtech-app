@@ -34,7 +34,10 @@ export function CravingScreen() {
 
   const craving = useMemo(() => ({ moods, intent }), [moods, intent])
   // Recompute when any setting changes (eligibleCount reads the settings store).
-  const count = useMemo(() => (status === 'ready' ? eligibleCount(craving) : null), [status, eligibleCount, craving, diet, budget, fulfilment]) // eslint-disable-line react-hooks/exhaustive-deps
+  const count = useMemo(
+    () => (status === 'ready' ? eligibleCount(craving) : null),
+    [status, eligibleCount, craving, diet, budget, fulfilment],
+  ) // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleMood = (m: Mood) => {
     if (intent === 'no_idea') setIntent('normal')
@@ -82,10 +85,20 @@ export function CravingScreen() {
         {copy.craving.or}
       </p>
       <div className="flex justify-around">
-        <button type="button" className="text-toggle" aria-pressed={intent === 'something_new'} onClick={() => toggleIntent('something_new')}>
+        <button
+          type="button"
+          className="text-toggle"
+          aria-pressed={intent === 'something_new'}
+          onClick={() => toggleIntent('something_new')}
+        >
           {copy.craving.somethingNew}
         </button>
-        <button type="button" className="text-toggle" aria-pressed={intent === 'no_idea'} onClick={() => toggleIntent('no_idea')}>
+        <button
+          type="button"
+          className="text-toggle"
+          aria-pressed={intent === 'no_idea'}
+          onClick={() => toggleIntent('no_idea')}
+        >
           {copy.craving.noIdea}
         </button>
       </div>
@@ -115,7 +128,13 @@ export function CravingScreen() {
           {copy.craving.none}
         </p>
       )}
-      <button type="button" className="btn btn-primary" style={{ marginTop: 12 }} onClick={go} disabled={status !== 'ready' || count === 0}>
+      <button
+        type="button"
+        className="btn btn-primary"
+        style={{ marginTop: 12 }}
+        onClick={go}
+        disabled={status !== 'ready' || count === 0}
+      >
         {status === 'ready' ? copy.craving.primary : copy.welcome.loading}
       </button>
 
@@ -129,19 +148,44 @@ export function CravingScreen() {
           value={diet}
           onToggle={(d) => setDiet(diet.includes(d) ? diet.filter((x) => x !== d) : [...diet, d])}
         />
-        <button type="button" className="btn btn-primary w-full" style={{ marginTop: 16 }} onClick={() => setSheet(null)}>
+        <button
+          type="button"
+          className="btn btn-primary w-full"
+          style={{ marginTop: 16 }}
+          onClick={() => setSheet(null)}
+        >
           {copy.sheets.done}
         </button>
       </Sheet>
       <Sheet open={sheet === 'budget'} title={copy.sheets.budgetTitle} onClose={() => setSheet(null)}>
-        <Segmented label={copy.sheets.budgetTitle} options={BUDGETS.map((b) => ({ value: b, label: copy.budget[b] }))} value={[budget]} onToggle={setBudget} />
-        <button type="button" className="btn btn-primary w-full" style={{ marginTop: 16 }} onClick={() => setSheet(null)}>
+        <Segmented
+          label={copy.sheets.budgetTitle}
+          options={BUDGETS.map((b) => ({ value: b, label: copy.budget[b] }))}
+          value={[budget]}
+          onToggle={setBudget}
+        />
+        <button
+          type="button"
+          className="btn btn-primary w-full"
+          style={{ marginTop: 16 }}
+          onClick={() => setSheet(null)}
+        >
           {copy.sheets.done}
         </button>
       </Sheet>
       <Sheet open={sheet === 'eating'} title={copy.sheets.eatingTitle} onClose={() => setSheet(null)}>
-        <Segmented label={copy.sheets.eatingTitle} options={FULFILMENTS.map((f) => ({ value: f, label: copy.fulfilment[f] }))} value={[fulfilment]} onToggle={setFulfilment} />
-        <button type="button" className="btn btn-primary w-full" style={{ marginTop: 16 }} onClick={() => setSheet(null)}>
+        <Segmented
+          label={copy.sheets.eatingTitle}
+          options={FULFILMENTS.map((f) => ({ value: f, label: copy.fulfilment[f] }))}
+          value={[fulfilment]}
+          onToggle={setFulfilment}
+        />
+        <button
+          type="button"
+          className="btn btn-primary w-full"
+          style={{ marginTop: 16 }}
+          onClick={() => setSheet(null)}
+        >
           {copy.sheets.done}
         </button>
       </Sheet>
