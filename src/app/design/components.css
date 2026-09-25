@@ -1,0 +1,101 @@
+/*
+ * Component styles for Direction A, written against the semantic tokens in tokens.css.
+ * Class names describe ROLES (t-title, btn-primary, dish-card), not looks, so another direction can restyle them.
+ */
+@layer components {
+  /* ── App shell ─────────────────────────────────────────────── */
+  .app-shell { position: relative; min-height: 100dvh; max-width: var(--container-app); margin: 0 auto; background: var(--color-canvas); isolation: isolate; }
+  .app-shell::before { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background-image: var(--texture-paper); background-size: 128px; opacity: 0.5; }
+  .screen { display: flex; flex-direction: column; min-height: 100dvh; padding: calc(env(safe-area-inset-top, 0px) + 10px) var(--spacing-gutter) calc(env(safe-area-inset-bottom, 0px) + 22px); }
+
+  /* ── Type roles ────────────────────────────────────────────── */
+  .t-display-xl { font: italic 500 46px/0.95 var(--font-display); font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 144; letter-spacing: -0.02em; }
+  .t-display-l { font: 500 36px/1.02 var(--font-display); font-variation-settings: 'SOFT' 30, 'opsz' 144; letter-spacing: -0.015em; }
+  .t-title { font: 400 32px/1.05 var(--font-display); font-variation-settings: 'SOFT' 50, 'opsz' 72; letter-spacing: -0.01em; }
+  .t-title em { font-style: italic; font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 72; color: var(--color-accent); }
+  .t-lead { font: italic 400 17px/1.3 var(--font-display); }
+  .t-body { font: 400 15px/1.45 var(--font-text); }
+  .t-label { font: 600 12px/1.2 var(--font-text); letter-spacing: 0.14em; text-transform: uppercase; }
+  .t-caption { font: 500 13px/1.3 var(--font-text); color: var(--color-ink-muted); font-variant-numeric: tabular-nums; }
+  .t-price { font: 600 18px/1 var(--font-display); font-variant-numeric: tabular-nums; }
+  .t-section { font: 600 11px/1.2 var(--font-text); letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-ink-muted); }
+  .wordmark { font: italic 600 17px/1 var(--font-display); font-variation-settings: 'SOFT' 100, 'WONK' 1; }
+  .muted { color: var(--color-ink-muted); }
+
+  /* ── Buttons ───────────────────────────────────────────────── */
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 18px; border: 0; cursor: pointer; font: 600 13px/1 var(--font-text); letter-spacing: 0.14em; text-transform: uppercase; border-radius: var(--radius-control); text-decoration: none; background: none; color: inherit; }
+  .btn-primary { background: var(--color-ink); color: var(--color-raised); box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.35); }
+  .btn-primary:active { transform: translateY(1px); box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.35); }
+  .btn-secondary { background: transparent; color: var(--color-ink); box-shadow: inset 0 0 0 1.5px var(--color-ink); }
+  .btn-tertiary { min-height: 44px; padding: 0 4px; font: italic 400 17px/1 var(--font-display); letter-spacing: 0; text-transform: none; text-decoration: underline; text-underline-offset: 4px; }
+  .btn:disabled, .btn[aria-disabled='true'] { cursor: not-allowed; background: transparent; color: var(--color-ink-muted); box-shadow: inset 0 0 0 1.5px var(--color-rule); }
+  .btn-tertiary:disabled { box-shadow: none; text-decoration: none; opacity: 0.55; }
+  .btn-icon { width: 48px; padding: 0; }
+  .icon-btn { display: inline-flex; align-items: center; gap: 6px; min-width: 44px; min-height: 44px; padding: 0 4px; border: 0; background: none; color: inherit; cursor: pointer; }
+  .icon-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .icon { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ── Dish colour ───────────────────────────────────────────── */
+  .tinted { background: color-mix(in oklab, var(--tint) var(--tint-strength), var(--color-raised)); border: 1px solid color-mix(in oklab, var(--tint) 35%, var(--color-rule)); }
+
+  /* ── Craving: an order pad ─────────────────────────────────── */
+  .tick-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--color-rule); }
+  .tick-row { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 46px; padding: 0; border: 0; border-bottom: 1px solid var(--color-rule); background: none; color: inherit; text-align: left; cursor: pointer; font: 400 19px/1 var(--font-display); font-variation-settings: 'opsz' 24; }
+  .tick-row[aria-pressed='true'] { font-weight: 600; }
+  .tick-box { display: grid; place-items: center; width: 22px; height: 22px; flex: none; border: 1.5px solid var(--color-ink); border-radius: 2px; font: 700 14px/1 var(--font-text); }
+  .tick-row[aria-pressed='true'] .tick-box { background: var(--color-ink); color: var(--color-canvas); }
+  .text-toggle { min-height: 44px; padding: 0 6px; border: 0; background: none; color: inherit; cursor: pointer; font: 400 15px/1 var(--font-text); text-decoration: underline; text-underline-offset: 3px; }
+  .text-toggle[aria-pressed='true'] { font-weight: 700; text-decoration-thickness: 2px; }
+  .settings-row { display: flex; align-items: center; justify-content: space-between; width: 100%; min-height: 44px; padding: 0; border: 0; border-bottom: 1px solid var(--color-rule); background: none; color: inherit; cursor: pointer; font: 600 11px/1.2 var(--font-text); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-muted); }
+  .settings-row b { color: var(--color-ink); font-weight: 600; border-bottom: 1px solid var(--color-ink); }
+
+  /* ── Dish card ─────────────────────────────────────────────── */
+  .dish-card { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; padding: 20px 20px 16px; border-radius: var(--radius-card); box-shadow: var(--shadow-card); outline-offset: 4px; }
+  .dish-card::before { content: ''; position: absolute; inset: 0; pointer-events: none; background-image: var(--texture-paper); background-size: 128px; opacity: 0.5; }
+  .dish-card > * { position: relative; }
+  .dish-card.is-behind { transform: translateY(12px) scale(0.96); filter: brightness(0.97); pointer-events: none; }
+  .dish-card .big-num { position: absolute; top: 30px; right: 14px; font: italic 300 200px/1 var(--font-display); font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 144; color: color-mix(in oklab, var(--tint) 38%, transparent); pointer-events: none; }
+  .dish-card .arch { font: italic 400 19px/1.2 var(--font-display); font-variation-settings: 'WONK' 1; color: var(--color-ink-muted); margin: 0 0 12px; }
+  .dish-card .foot { border-top: 1px dashed color-mix(in oklab, var(--color-ink) 35%, transparent); padding-top: 12px; }
+  .dot-list > * + *::before { content: '\00a0·\00a0'; }
+  .spice { display: flex; align-items: center; gap: 3px; color: var(--color-heat); }
+  .spice svg { width: 14px; height: 14px; fill: currentColor; }
+  .spice .off { color: color-mix(in oklab, var(--color-ink) 22%, transparent); }
+  .leader { flex: 1; border-bottom: 1.5px dotted currentColor; opacity: 0.45; transform: translateY(-4px); }
+
+  /* ── YES / NOPE ────────────────────────────────────────────── */
+  .stamp { position: absolute; top: 24px; z-index: 3; padding: 12px 18px; border: 3px double currentColor; border-radius: 50%; font: 700 17px/1 var(--font-text); letter-spacing: 0.16em; text-transform: uppercase; opacity: 0; pointer-events: none; }
+  .stamp-yes { right: 18px; color: var(--color-yes); transform: rotate(10deg); }
+  .stamp-no { left: 18px; color: var(--color-no); border-radius: 2px; transform: rotate(-8deg); text-decoration: line-through; text-decoration-thickness: 2px; }
+  .vote { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 62px; border: 0; border-radius: var(--radius-control); cursor: pointer; font: 600 11px/1 var(--font-text); letter-spacing: 0.14em; text-transform: uppercase; }
+  .vote .icon { width: 22px; height: 22px; }
+  .vote-no { background: var(--color-raised); color: var(--color-ink); box-shadow: inset 0 0 0 1.5px var(--color-ink); }
+  .vote-yes { background: var(--color-yes); color: var(--color-on-accent); }
+
+  /* ── Counter ───────────────────────────────────────────────── */
+  .counter { text-align: center; }
+  .counter .from { text-decoration: line-through; text-decoration-thickness: 1.5px; color: var(--color-ink-muted); font: 600 12px/1 var(--font-text); }
+  .counter .arrow { color: var(--color-ink-muted); margin: 0 4px; font: 400 14px/1 var(--font-text); }
+  .counter b { font: 600 22px/1 var(--font-display); font-variant-numeric: tabular-nums; margin: 0 3px; }
+  .counter .lbl { font: 600 11px/1 var(--font-text); letter-spacing: 0.12em; text-transform: uppercase; }
+
+  /* ── Match: a receipt ──────────────────────────────────────── */
+  .receipt { position: relative; background: var(--color-raised); padding: 16px 18px 12px; border-radius: 2px; box-shadow: var(--shadow-card); }
+  .receipt::after { content: ''; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: radial-gradient(circle at 6px -2px, transparent 6px, var(--color-raised) 6.5px) 0 0 / 12px 8px repeat-x; }
+  .badge { display: inline-block; padding: 5px 8px; box-shadow: inset 0 0 0 1.5px var(--color-ink); font: 600 10px/1 var(--font-text); letter-spacing: 0.14em; text-transform: uppercase; }
+  .reasons { list-style: none; margin: 0; padding: 0; font: 400 14px/1.35 var(--font-text); }
+  .reasons li { display: flex; gap: 8px; padding: 4px 0; border-bottom: 1px dotted var(--color-rule); }
+  .reasons li::before { content: '✓'; color: var(--color-accent); font-weight: 700; }
+  .reasons li[data-kind='avoided']::before { content: '✕'; color: var(--color-ink-muted); }
+  .reasons li[data-kind='craving']::before { content: '•'; color: var(--color-ink-muted); }
+  .alt-tile { display: block; width: 100%; min-height: 44px; padding: 8px 10px; border: 0; border-radius: var(--radius-control); box-shadow: inset 0 0 0 1px var(--color-rule); background: none; color: inherit; text-align: left; cursor: pointer; font: italic 400 16px/1.1 var(--font-display); }
+  .alt-tile small { display: block; margin-bottom: 4px; font: 600 10px/1 var(--font-text); font-style: normal; letter-spacing: 0.12em; text-transform: uppercase; color: var(--color-ink-muted); }
+
+  /* ── Sheets ────────────────────────────────────────────────── */
+  .sheet-backdrop { position: fixed; inset: 0; z-index: 30; background: rgba(29, 26, 22, 0.4); }
+  .sheet { position: fixed; left: 50%; bottom: 0; z-index: 31; width: min(100%, var(--container-app)); max-height: 88dvh; overflow: auto; transform: translateX(-50%); padding: 20px var(--spacing-gutter) calc(env(safe-area-inset-bottom, 0px) + 20px); background: var(--color-raised); border-radius: var(--radius-card) var(--radius-card) 0 0; box-shadow: 0 -10px 30px -12px rgba(29, 26, 22, 0.45); }
+  .segmented { display: flex; flex-wrap: wrap; gap: 8px; }
+  .segmented button { min-height: 44px; padding: 0 14px; border: 0; border-radius: var(--radius-control); box-shadow: inset 0 0 0 1.5px var(--color-ink); background: transparent; color: var(--color-ink); cursor: pointer; font: 600 13px/1 var(--font-text); }
+  .segmented button[aria-pressed='true'] { background: var(--color-ink); color: var(--color-raised); }
+  .notice { padding: 10px 12px; border: 1px dashed var(--color-ink-muted); border-radius: var(--radius-control); font: 500 13px/1.4 var(--font-text); color: var(--color-ink-muted); }
+}

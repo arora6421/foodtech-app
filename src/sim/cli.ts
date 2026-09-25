@@ -1,16 +1,15 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { cpus } from 'node:os'
 import { join } from 'node:path'
-import { Worker } from 'node:worker_threads'
 import { MOCK_CATALOGUE } from '../catalog/mock/MockCatalog'
 import { clusterArchetypes } from '../engine/clusters/clusters'
 import { withConfig } from '../engine/config'
 import type { EngineConfig } from '../engine/config'
 import { GROUP_SCENARIOS, PERSONAS, personaById } from './personas'
 import { exitCriteria, renderReport } from './report'
-import type { GroupMetrics } from './runGroup'
 import { runSession } from './runSession'
-import type { SessionMetrics, SessionTranscript } from './runSession'
+import type { SessionMetrics } from './runSession'
+import { chunk, runJobs, seedList } from './pool'
 import type { Job } from './worker'
 
 // npm run sim -- [--seeds 200] [--group-seeds 50] [--policies eig,greedy,random,no-decay]
@@ -48,45 +47,6 @@ function args() {
     out: get('--out') ?? 'sim-output',
   }
 }
-
-/** A tiny worker pool; each worker runs TypeScript via the same loader (tsx) as this process. */
-async function runJobs(jobs: Job[], workers: number): Promise<{ solo: SessionMetrics[]; transcripts: SessionTranscript[]; group: GroupMetrics[] }> {
-  const solo: SessionMetrics[] = []
-  const transcripts: SessionTranscript[] = []
-  const group: GroupMetrics[] = []
-  const queue = [...jobs]
-  let done = 0
-  const pool = Array.from({ length: Math.min(workers, jobs.length) }, () => new Worker(new URL('./worker.ts', import.meta.url), { execArgv: process.execArgv }))
-  await Promise.all(
-    pool.map(
-      (w) =>
-        new Promise<void>((resolve, reject) => {
-          const next = () => {
-            const job = queue.shift()
-            if (!job) return resolve()
-            w.postMessage(job)
-          }
-          w.on('message', (msg: { kind: string; metrics: never[]; transcripts?: SessionTranscript[] }) => {
-            if (msg.kind === 'solo') {
-              solo.push(...(msg.metrics as SessionMetrics[]))
-              transcripts.push(...(msg.transcripts ?? []))
-            } else group.push(...(msg.metrics as GroupMetrics[]))
-            done++
-            process.stdout.write(`\r  ${done}/${jobs.length} jobs`)
-            next()
-          })
-          w.on('error', reject)
-          next()
-        }),
-    ),
-  )
-  await Promise.all(pool.map((w) => w.terminate()))
-  process.stdout.write('\n')
-  return { solo, transcripts, group }
-}
-
-const seedList = (n: number) => Array.from({ length: n }, (_, i) => i + 1)
-const chunk = (xs: number[], size: number) => Array.from({ length: Math.ceil(xs.length / size) }, (_, i) => xs.slice(i * size, (i + 1) * size))
 
 async function main() {
   const opt = args()

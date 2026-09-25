@@ -1,13 +1,12 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import './design/app.css'
+import { App } from './App'
 import { DebugPanel } from './debug/DebugPanel'
 
-// M0: the app is just the engine debug panel (MVP_SPEC §4 D1). The real UI arrives in M1.
+// The app. ?debug=panel opens the standalone M0 engine panel (sim transcript replay) instead.
 const root = document.getElementById('root')
 if (root) {
-  createRoot(root).render(
-    <StrictMode>
-      <DebugPanel />
-    </StrictMode>,
-  )
+  const standalonePanel = new URLSearchParams(location.search).get('debug') === 'panel'
+  createRoot(root).render(<StrictMode>{standalonePanel ? <DebugPanel /> : <App />}</StrictMode>)
 }

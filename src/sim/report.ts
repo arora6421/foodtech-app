@@ -233,3 +233,46 @@ export function renderReport(
   }
   return lines.join('\n') + '\n'
 }
+
+/** The M0 scorecard as plain numbers (rounded to 4 dp), for the frozen-baseline guard. */
+export type Scorecard = Record<string, number>
+
+export function scorecard(byPolicy: Map<string, SessionMetrics[]>, groups: GroupMetrics[]): Scorecard {
+  const r4 = (x: number) => Math.round(x * 1e4) / 1e4
+  const eig = byPolicy.get('eig') ?? []
+  const of = (ids: string[], list: SessionMetrics[] = eig) => list.filter((m) => ids.includes(m.personaId))
+  const gated = aggregate(of(GATED))
+  const out: Scorecard = {
+    medianSwipes: gated.medianSwipes,
+    p90Swipes: gated.p90Swipes,
+    maxReachedGatedExclP12: r4(aggregate(of(GATED.filter((id) => id !== 'P12'))).maxReached),
+    acceptableHero: r4(gated.acceptable),
+    hit1: r4(gated.hit1),
+    hit3: r4(gated.hit3),
+    swipesToCorrectEig: gated.medianSwipesToCorrect,
+    p10AcceptableHero: r4(aggregate(of(['P10'])).acceptable),
+    p7Hit3: r4(aggregate(of(['P7'])).hit3),
+    p11PrematureLock: r4(aggregate(of(['P11'])).prematureLock),
+    featurePrecision: r4(gated.featurePrecision),
+    dietViolations: aggregate(eig).dietViolations,
+    unsupportedClaims: aggregate(eig).unsupported,
+  }
+  const greedy = byPolicy.get('greedy')
+  if (greedy) {
+    const g = aggregate(of(GATED, greedy))
+    out.swipesToCorrectGreedy = g.medianSwipesToCorrect
+    out.hit1Greedy = r4(g.hit1)
+  }
+  const random = byPolicy.get('random')
+  if (random) {
+    const x = aggregate(of(GATED, random))
+    out.swipesToCorrectRandom = x.medianSwipesToCorrect
+    out.hit1Random = r4(x.hit1)
+  }
+  if (groups.length) {
+    out.groupDeterminism = r4(rate(groups.map((g) => g.deterministic)))
+    out.groupDietViolations = groups.reduce((a, g) => a + g.dietViolations, 0)
+    out.groupFinalPickTop3 = r4(rate(groups.map((g) => g.finalInTruthTop3)))
+  }
+  return out
+}

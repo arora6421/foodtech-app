@@ -82,7 +82,16 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/sim/**/*.ts', '*.config.{js,ts}'],
+    // M1: presentational layers never touch the engine, catalogue or sim directly; only app/state,
+    // app/services and app/debug may (docs/m1-spec.md §0, §3.2).
+    files: ['src/app/{screens,components,hooks,routes,design,copy}/**/*.{ts,tsx}'],
+    rules: restrict(
+      ['@supabase/*', ...layer('sim', 'engine', 'catalog', 'sync')],
+      'Presentational code uses view models from app/state; only app/state and app/services talk to the engine.',
+    ),
+  },
+  {
+    files: ['src/sim/**/*.ts', '*.config.{js,ts}', 'docs/**/*.mjs'],
     languageOptions: { globals: globals.node },
   },
 )

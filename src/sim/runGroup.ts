@@ -17,6 +17,8 @@ export interface GroupMetrics {
   scenarioId: string
   seed: number
   outcome: GroupOutcome
+  heroId: ArchetypeId
+  finalId: ArchetypeId
   expectedOutcome: boolean
   heroInTruthTop3: boolean
   /** The dish the group ends with: the hero for a WINNER, otherwise the final-round winner (personas approve what they'd say YES to). */
@@ -112,6 +114,8 @@ export function runGroup(
     scenarioId: scenario.id,
     seed,
     outcome: result.outcome,
+    heroId: result.hero.archetypeId,
+    finalId: final.archetypeId,
     expectedOutcome: scenario.expected.includes(result.outcome),
     heroInTruthTop3: truthTop3.includes(result.hero.archetypeId),
     finalInTruthTop3: truthTop3.includes(final.archetypeId),

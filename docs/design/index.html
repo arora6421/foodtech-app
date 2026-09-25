@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>M1.1 · Design directions</title>
+<style>
+/* ── Local fonts only (no third-party requests). All SIL OFL; licences in ./fonts. Direction C uses the system UI font. ── */
+@font-face { font-family: 'Fraunces'; src: url('fonts/Fraunces.ttf') format('truetype'); font-weight: 100 900; font-style: normal; font-display: swap; }
+@font-face { font-family: 'Fraunces'; src: url('fonts/Fraunces-Italic.ttf') format('truetype'); font-weight: 100 900; font-style: italic; font-display: swap; }
+@font-face { font-family: 'Instrument Sans'; src: url('fonts/InstrumentSans.ttf') format('truetype'); font-weight: 400 700; font-stretch: 75% 100%; font-display: swap; }
+@font-face { font-family: 'Bricolage Grotesque'; src: url('fonts/BricolageGrotesque.ttf') format('truetype'); font-weight: 200 800; font-stretch: 75% 100%; font-display: swap; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Page chrome: plain on purpose, so it doesn't compete with the directions
+   ══════════════════════════════════════════════════════════════════════════ */
+* { box-sizing: border-box; }
+body { margin: 0; background: #e6e5e3; color: #222; font: 15px/1.5 system-ui, -apple-system, 'Segoe UI', sans-serif; }
+.doc { max-width: 1580px; margin: 0 auto; padding: 28px 16px 80px; }
+.doc > h1 { font-size: 26px; margin: 0 0 6px; }
+.lede { max-width: 900px; color: #444; margin: 0 0 14px; }
+.toolbar { position: sticky; top: 0; z-index: 50; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; padding: 10px 12px; margin: 0 -12px 8px; background: rgba(230,229,227,.95); border-bottom: 1px solid #cfcdca; }
+.toolbar .show { font: 600 13px/1 system-ui, sans-serif; }
+.seg { display: inline-flex; border: 1px solid #aaa; border-radius: 6px; overflow: hidden; background: #fff; }
+.seg button { font: 600 13px/1 system-ui, sans-serif; padding: 10px 14px; min-height: 40px; border: 0; border-left: 1px solid #ccc; background: none; color: #333; cursor: pointer; }
+.seg button:first-child { border-left: 0; }
+.seg button[aria-pressed='true'] { background: #222; color: #fff; }
+.toolbar label { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; cursor: pointer; }
+.toolbar nav { display: flex; flex-wrap: wrap; gap: 4px 12px; font-size: 13px; }
+.toolbar nav a { color: #333; }
+.row { margin-top: 36px; scroll-margin-top: 70px; }
+.row > h2 { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; color: #555; margin: 0 0 4px; }
+.row > p.note { margin: 0 0 12px; color: #555; font-size: 14px; max-width: 900px; }
+.pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 392px), 1fr)); gap: 16px; }
+body.hide-a .col.dir-a, body.hide-b .col.dir-b, body.hide-c .col.dir-c { display: none; }
+.col { position: relative; border-radius: 10px; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 12px; overflow: hidden; }
+.col-label { align-self: stretch; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font: 700 12px/1.2 system-ui, sans-serif; letter-spacing: .1em; text-transform: uppercase; opacity: .8; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.controls button { font: 600 12px/1 system-ui, sans-serif; padding: 9px 12px; min-height: 36px; border-radius: 6px; border: 1px solid #999; background: #fff; color: #222; cursor: pointer; }
+table.diff { width: 100%; border-collapse: collapse; background: #fff; font-size: 14px; }
+table.diff th, table.diff td { text-align: left; vertical-align: top; padding: 10px 12px; border-bottom: 1px solid #ddd; }
+table.diff th { background: #f4f4f2; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+table.diff td:first-child { font-weight: 600; white-space: nowrap; }
+.table-scroll { overflow-x: auto; }
+.shared { background: #fff; padding: 14px 18px; border-radius: 6px; font-size: 14px; }
+:focus-visible { outline: 3px solid #2a6df4; outline-offset: 2px; }
+
+/* ── Phone frame ── */
+.phone { position: relative; width: 360px; max-width: 100%; height: 740px; border-radius: 34px; overflow: hidden; box-shadow: 0 0 0 9px #111, 0 16px 34px rgba(0,0,0,.35); isolation: isolate; flex: none; }
+.statusbar { position: absolute; top: 0; left: 0; right: 0; height: 34px; display: flex; justify-content: space-between; align-items: center; padding: 0 22px; font: 600 12px/1 system-ui, sans-serif; z-index: 5; }
+.screen { position: absolute; inset: 34px 0 0; z-index: 1; display: flex; flex-direction: column; padding: 10px 20px 22px; }
+.phone::before, .texture::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0; background-size: 128px; }
+
+/* ── Shared component skeleton: every visual decision comes from the direction blocks below ── */
+svg.i { width: 20px; height: 20px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; }
+.iconbtn { display: inline-flex; align-items: center; gap: 6px; min-width: 44px; min-height: 44px; padding: 0 4px; background: none; border: 0; color: inherit; cursor: pointer; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 18px; border: 0; cursor: pointer; text-decoration: none; }
+.btn[disabled] { cursor: not-allowed; }
+.btn-icon { width: 48px; padding: 0; }
+.stack { position: relative; flex: 1; margin: 8px 0 14px; }
+.card { position: absolute; inset: 0; display: flex; flex-direction: column; overflow: hidden; touch-action: none; user-select: none; will-change: transform; }
+.card.behind { pointer-events: none; }
+.card > :not(.stamp):not(.bignum) { position: relative; z-index: 1; }
+.card::before { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0; background-size: 128px; }
+.bignum { position: absolute; z-index: 0; pointer-events: none; }
+.stamp { position: absolute; z-index: 3; opacity: 0; pointer-events: none; }
+.actions { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; }
+.meta-line { display: flex; align-items: baseline; gap: 8px; }
+.leader { flex: 1; border-bottom: 1.5px dotted currentColor; opacity: .45; transform: translateY(-4px); }
+.spice { display: flex; align-items: center; gap: 4px; }
+.spice .unit { display: inline-flex; }
+.spice .unit svg { width: 14px; height: 14px; fill: currentColor; stroke: none; }
+.meta { display: flex; flex-wrap: wrap; align-items: center; margin: 0; }
+.meta > span { display: inline-flex; align-items: center; gap: 6px; }
+.meta svg.i { width: 18px; height: 18px; }
+.tags { margin: 0; }
+.chev { display: none; }
+.photo { display: none; }
+.moods { list-style: none; margin: 0; padding: 0; }
+.moods li { position: relative; cursor: pointer; }
+.tick { flex: none; }
+.intents { display: flex; gap: 10px; }
+.intents span { flex: 1; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+.settings { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: auto 0 12px; }
+.fan { position: relative; flex: 1; margin: 12px 0; }
+.fan > div { position: absolute; left: 50%; width: 80%; height: 150px; display: flex; flex-direction: column; justify-content: flex-start; gap: 6px; padding: 12px 14px; overflow: hidden; }
+.fan > div:nth-child(1) { top: 6px; transform: translateX(-56%) rotate(-5deg); }
+.fan > div:nth-child(2) { top: 76px; transform: translateX(-44%) rotate(4deg); }
+.fan > div:nth-child(3) { top: 146px; transform: translateX(-50%) rotate(-1.5deg); }
+.why { margin: 0; }
+.reasons { list-style: none; margin: 0; padding: 0; }
+.reasons li { display: flex; gap: 8px; }
+.match-actions { display: grid; grid-template-columns: 1fr 1fr 48px; gap: 8px; margin-top: auto; }
+.runners { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+.runners > div { padding: 8px 10px; min-height: 44px; }
+.panel { width: 100%; padding: 16px; border-radius: 6px; }
+.panel h3 { margin: 0 0 12px; font: 700 11px/1 system-ui, sans-serif; letter-spacing: .14em; text-transform: uppercase; opacity: .75; }
+.btn-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-items: center; }
+.btn-grid .lab { font: 600 11px/1.3 system-ui, sans-serif; opacity: .7; }
+.type-row { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--rule-line); }
+.type-row .lab { font: 600 11px/1.3 system-ui, sans-serif; opacity: .7; }
+.type-row .spec { display: block; font: 500 11px/1.3 system-ui, sans-serif; opacity: .6; margin-top: 4px; letter-spacing: 0; text-transform: none; font-style: normal; }
+.swatches { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.swatch { display: flex; gap: 10px; align-items: center; font-size: 12px; line-height: 1.35; }
+.swatch i { width: 34px; height: 34px; flex: none; border-radius: 3px; box-shadow: inset 0 0 0 1px rgba(128,128,128,.4); }
+.texture { position: relative; height: 110px; border-radius: 4px; overflow: hidden; }
+.texture span { position: absolute; left: 12px; bottom: 10px; z-index: 1; font-size: 12px; }
+.motion-list { margin: 0; padding-left: 18px; font-size: 13px; }
+.motion-list li { margin: 4px 0; }
+/* A and B present multi-part strings with dot separators; C (by its brief) uses space, icons and chips instead. */
+.dir-a .tags span + span::before, .dir-b .tags span + span::before,
+.dir-a .meta > span + span::before, .dir-b .meta > span + span::before,
+.dir-a .offer span + span::before, .dir-b .offer span + span::before,
+.dir-a .alsoat span + span::before, .dir-b .alsoat span + span::before { content: '\00a0·\00a0'; }
+.dir-a .meta svg, .dir-b .meta svg { display: none; }
+.dir-a .alsoat span:first-child::before, .dir-b .alsoat span:first-child::before { content: '\00a0'; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DIRECTION A · ORDER PAD
+   Light, editorial, tactile print. A knowing waiter with a notepad.
+   ══════════════════════════════════════════════════════════════════════════ */
+.dir-a {
+  --bg: #F3ECDF; --bg-elevated: #FBF7EF; --text: #1D1A16; --text-muted: #5E564C; --rule-line: #CFC3AE;
+  --accent: #B53A25; --on-accent: #FBF7EF; --heat: #B53A25; --yes: #B53A25; --no: #1D1A16;
+  --font-display: 'Fraunces', Georgia, serif; --font-text: 'Instrument Sans', system-ui, sans-serif;
+  --radius-s: 3px; --card-radius: 6px; --shadow-card: 0 1px 0 rgba(29,26,22,.08), 0 10px 24px -12px rgba(29,26,22,.4);
+  background: var(--bg); color: var(--text);
+}
+.dir-a .col-label { font-family: var(--font-text); }
+.dir-a .phone, .dir-a .panel { background: var(--bg); color: var(--text); font-family: var(--font-text); }
+.dir-a .panel { background: var(--bg-elevated); border: 1px solid var(--rule-line); }
+.dir-a .phone::before, .dir-a .texture::before, .dir-a .card::before { background-image: url('textures/grain-paper.png'); opacity: .5; }
+.dir-a .texture { background: var(--bg); }
+.dir-a .t-display-xl { font: italic 500 46px/.95 var(--font-display); font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 144; letter-spacing: -.02em; }
+.dir-a .t-display-l { font: 500 38px/1 var(--font-display); font-variation-settings: 'SOFT' 30, 'opsz' 144; letter-spacing: -.015em; }
+.dir-a .t-title { font: 400 32px/1.05 var(--font-display); font-variation-settings: 'SOFT' 50, 'opsz' 72; letter-spacing: -.01em; }
+.dir-a .t-title em { font-style: italic; font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 72; color: var(--accent); }
+.dir-a .t-body { font: 400 15px/1.45 var(--font-text); }
+.dir-a .t-lead { font: italic 400 17px/1.3 var(--font-display); }
+.dir-a .t-label { font: 600 12px/1 var(--font-text); letter-spacing: .14em; text-transform: uppercase; }
+.dir-a .t-caption { font: 500 13px/1.3 var(--font-text); color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.dir-a .t-price { font: 600 18px/1 var(--font-display); font-variant-numeric: tabular-nums; }
+.dir-a .wordmark { font: italic 600 17px/1 var(--font-display); font-variation-settings: 'SOFT' 100, 'WONK' 1; }
+.dir-a .muted { color: var(--text-muted); }
+.dir-a .btn { font: 600 13px/1 var(--font-text); letter-spacing: .14em; text-transform: uppercase; border-radius: var(--radius-s); }
+.dir-a .btn-primary { background: var(--text); color: var(--bg-elevated); box-shadow: inset 0 -3px 0 rgba(0,0,0,.35); }
+.dir-a .btn-primary:active, .dir-a .btn-primary.is-pressed { transform: translateY(1px); box-shadow: inset 0 -1px 0 rgba(0,0,0,.35); }
+.dir-a .btn-secondary { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1.5px var(--text); }
+.dir-a .btn-tertiary { background: none; min-height: 44px; padding: 0 4px; font: italic 400 17px/1 var(--font-display); letter-spacing: 0; text-transform: none; text-decoration: underline; text-underline-offset: 4px; color: var(--text); }
+.dir-a .btn[disabled] { background: transparent; color: var(--text-muted); box-shadow: inset 0 0 0 1.5px var(--rule-line); }
+.dir-a .is-focus { outline: 3px solid var(--text); outline-offset: 3px; }
+.dir-a .fan > div { background: color-mix(in oklab, var(--tint) 22%, var(--bg-elevated)); border: 1px solid color-mix(in oklab, var(--tint) 40%, var(--rule-line)); border-radius: var(--card-radius); box-shadow: var(--shadow-card); }
+.dir-a .fan .t-display-l { font-size: 26px; }
+.dir-a .moods { border-top: 1px solid var(--rule-line); }
+.dir-a .moods li { display: flex; align-items: center; gap: 12px; min-height: 44px; border-bottom: 1px solid var(--rule-line); font: 400 19px/1 var(--font-display); font-variation-settings: 'opsz' 24; }
+.dir-a .tick { width: 22px; height: 22px; border: 1.5px solid var(--text); border-radius: 2px; display: grid; place-items: center; font: 700 14px/1 var(--font-text); }
+.dir-a .moods li.on { font-weight: 600; }
+.dir-a .moods li.on .tick { background: var(--text); color: var(--bg); }
+.dir-a .moods li.on .tick::before { content: '✓'; }
+.dir-a .or { text-align: center; margin: 8px 0 0; font: italic 400 15px/1 var(--font-display); color: var(--text-muted); }
+.dir-a .intents span { font: 400 15px/1 var(--font-text); text-decoration: underline; text-underline-offset: 3px; }
+.dir-a .settings { font: 600 11px/1 var(--font-text); letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); }
+.dir-a .settings b { color: var(--text); border-bottom: 1px solid var(--text); margin-left: 4px; }
+.dir-a .counter { text-align: center; }
+.dir-a .counter .from { text-decoration: line-through; text-decoration-thickness: 1.5px; color: var(--text-muted); font: 600 12px/1 var(--font-text); }
+.dir-a .counter .arrow { color: var(--text-muted); margin: 0 4px; font: 400 14px/1 var(--font-text); }
+.dir-a .counter b { font: 600 22px/1 var(--font-display); font-variant-numeric: tabular-nums; margin: 0 3px; }
+.dir-a .counter .lbl { font: 600 11px/1 var(--font-text); letter-spacing: .12em; text-transform: uppercase; }
+.dir-a .card { border-radius: var(--card-radius); box-shadow: var(--shadow-card); background: color-mix(in oklab, var(--tint) 20%, var(--bg-elevated)); border: 1px solid color-mix(in oklab, var(--tint) 35%, var(--rule-line)); padding: 20px 20px 16px; }
+.dir-a .card.behind { transform: translateY(12px) scale(.96); filter: brightness(.97); }
+.dir-a .card .top-line { display: flex; justify-content: space-between; }
+.dir-a .card .t-display-l { margin: auto 0 4px; }
+.dir-a .card .arch { font: italic 400 19px/1.2 var(--font-display); font-variation-settings: 'WONK' 1; color: var(--text-muted); margin: 0 0 14px; }
+.dir-a .card .tags { margin: 0 0 14px; }
+.dir-a .bignum { top: 30px; right: 14px; font: italic 300 200px/1 var(--font-display); font-variation-settings: 'SOFT' 100, 'WONK' 1, 'opsz' 144; color: color-mix(in oklab, var(--tint) 38%, transparent); }
+.dir-a .spice { color: var(--heat); margin-bottom: 14px; }
+.dir-a .spice .word { margin-left: 4px; }
+.dir-a .card .foot { border-top: 1px dashed color-mix(in oklab, var(--text) 35%, transparent); padding-top: 12px; }
+.dir-a .stamp { top: 24px; padding: 12px 18px; border: 3px double currentColor; border-radius: 50%; font: 700 17px/1 var(--font-text); letter-spacing: .16em; text-transform: uppercase; }
+.dir-a .stamp.yes { right: 18px; color: var(--yes); transform: rotate(10deg); }
+.dir-a .stamp.no { left: 18px; color: var(--no); border-radius: 2px; transform: rotate(-8deg); text-decoration: line-through; text-decoration-thickness: 2px; }
+.dir-a .vote { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-height: 62px; border: 0; border-radius: var(--radius-s); cursor: pointer; font: 600 11px/1 var(--font-text); letter-spacing: .14em; text-transform: uppercase; }
+.dir-a .vote.no { background: var(--bg-elevated); color: var(--text); box-shadow: inset 0 0 0 1.5px var(--text); }
+.dir-a .vote.yes { background: var(--yes); color: var(--on-accent); }
+.dir-a .vote svg { width: 22px; height: 22px; }
+.dir-a .match-title { font: italic 400 30px/1 var(--font-display); font-variation-settings: 'SOFT' 100, 'WONK' 1; margin: 8px 0 12px; }
+.dir-a .result { position: relative; background: var(--bg-elevated); padding: 16px 18px 12px; border-radius: 2px; box-shadow: var(--shadow-card); }
+.dir-a .result::after { content: ''; position: absolute; left: 0; right: 0; bottom: -8px; height: 8px; background: radial-gradient(circle at 6px -2px, transparent 6px, var(--bg-elevated) 6.5px) 0 0 / 12px 8px repeat-x; }
+.dir-a .badge { display: inline-block; padding: 5px 8px; box-shadow: inset 0 0 0 1.5px var(--text); font: 600 10px/1 var(--font-text); letter-spacing: .14em; text-transform: uppercase; }
+.dir-a .result .t-display-xl { margin: 8px 0 6px; }
+.dir-a .result .t-lead { margin: 10px 0 4px; }
+.dir-a .why { font: 600 11px/1 var(--font-text); letter-spacing: .14em; text-transform: uppercase; color: var(--text-muted); margin: 10px 0 2px; }
+.dir-a .reasons { font: 400 14px/1.35 var(--font-text); }
+.dir-a .reasons li { padding: 4px 0; border-bottom: 1px dotted var(--rule-line); }
+.dir-a .reasons li::before { content: '✓'; color: var(--accent); font-weight: 700; }
+.dir-a .reasons li.avoided::before { content: '✕'; color: var(--text-muted); }
+.dir-a .alsoat { margin: 14px 0 0; }
+.dir-a .runners > div { box-shadow: inset 0 0 0 1px var(--rule-line); border-radius: var(--radius-s); font: italic 400 16px/1.1 var(--font-display); }
+.dir-a .runners small { display: block; font: 600 10px/1 var(--font-text); letter-spacing: .12em; text-transform: uppercase; font-style: normal; color: var(--text-muted); margin-bottom: 4px; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DIRECTION B · NIGHT MARKET
+   Dark, graphic, high-energy. Poster type, flat colour, sticker labels.
+   ══════════════════════════════════════════════════════════════════════════ */
+.dir-b {
+  --bg: #16120F; --bg-elevated: #221C18; --text: #F6EFE6; --text-muted: #B3A594; --rule-line: #3A312B;
+  --accent: #FF5B2E; --on-accent: #16120F; --heat: #FF5B2E; --yes: #C6F24E; --on-yes: #16120F; --no: #F6EFE6;
+  --on-field: #FFF8EF; --on-field-muted: rgba(255,248,239,.86);
+  --font-display: 'Bricolage Grotesque', 'Arial Narrow', sans-serif; --font-text: 'Bricolage Grotesque', system-ui, sans-serif;
+  --radius-s: 2px; --card-radius: 4px; --shadow-hard: 4px 4px 0 #000;
+  background: var(--bg); color: var(--text);
+}
+.dir-b [style*='--tint'] { --field: color-mix(in oklab, var(--tint) 70%, #000); }
+.dir-b .col-label { font-family: var(--font-text); }
+.dir-b .phone, .dir-b .panel { background: var(--bg); color: var(--text); font-family: var(--font-text); font-variation-settings: 'opsz' 14; }
+.dir-b .panel { background: var(--bg-elevated); border: 2px solid var(--rule-line); }
+.dir-b .phone::before, .dir-b .texture::before { background-image: url('textures/grain-night.png'); opacity: .6; }
+.dir-b .texture { background: var(--bg); }
+.dir-b .t-display-xl, .dir-b .t-display-l, .dir-b .t-title { font-family: var(--font-display); font-weight: 800; font-stretch: 75%; text-transform: uppercase; letter-spacing: -.01em; font-variation-settings: 'opsz' 96; }
+.dir-b .t-display-xl { font-size: 52px; line-height: .86; }
+.dir-b .t-display-l { font-size: 56px; line-height: .86; }
+.dir-b .t-title { font-size: 42px; line-height: .9; }
+.dir-b .t-title em { font-style: normal; color: var(--accent); }
+.dir-b .t-body { font: 400 15px/1.45 var(--font-text); }
+.dir-b .t-lead { font: 600 16px/1.35 var(--font-text); }
+.dir-b .t-label { font: 700 12px/1 var(--font-text); letter-spacing: .1em; text-transform: uppercase; }
+.dir-b .t-caption { font: 700 12px/1.3 var(--font-text); letter-spacing: .05em; text-transform: uppercase; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.dir-b .t-price { font: 800 22px/1 var(--font-display); font-stretch: 80%; font-variant-numeric: tabular-nums; }
+.dir-b .wordmark { font: 800 18px/1 var(--font-display); font-stretch: 75%; text-transform: uppercase; letter-spacing: .02em; }
+.dir-b .muted { color: var(--text-muted); }
+.dir-b .btn { font: 800 15px/1 var(--font-display); font-stretch: 80%; letter-spacing: .04em; text-transform: uppercase; border-radius: var(--radius-s); }
+.dir-b .btn-primary { background: var(--accent); color: var(--on-accent); box-shadow: var(--shadow-hard); }
+.dir-b .btn-primary:active, .dir-b .btn-primary.is-pressed { transform: translate(4px, 4px); box-shadow: 0 0 0 #000; }
+.dir-b .btn-secondary { background: transparent; color: var(--text); box-shadow: inset 0 0 0 2px var(--text); }
+.dir-b .btn-tertiary { background: none; min-height: 44px; padding: 0 4px; font: 700 12px/1 var(--font-text); letter-spacing: .1em; color: var(--text-muted); text-decoration: underline; text-underline-offset: 4px; }
+.dir-b .btn[disabled] { background: transparent; color: #7d7064; box-shadow: inset 0 0 0 2px var(--rule-line); }
+.dir-b .is-focus { outline: 3px solid var(--yes); outline-offset: 3px; }
+.dir-b .fan > div { background: var(--field); color: var(--on-field); border-radius: var(--card-radius); border: 2px solid rgba(0,0,0,.4); box-shadow: var(--shadow-hard); }
+.dir-b .fan .t-display-l { font-size: 34px; }
+.dir-b .moods { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.dir-b .moods li { min-height: 54px; display: flex; align-items: flex-end; padding: 8px 10px; box-shadow: inset 0 0 0 2px var(--rule-line); border-radius: var(--radius-s); font: 800 20px/.9 var(--font-display); font-stretch: 80%; text-transform: uppercase; }
+.dir-b .moods li:last-child { grid-column: span 2; }
+.dir-b .tick { position: absolute; top: 7px; right: 8px; font: 800 15px/1 var(--font-text); }
+.dir-b .moods li.on { background: var(--accent); color: var(--on-accent); box-shadow: var(--shadow-hard); transform: translate(-2px, -2px); }
+.dir-b .moods li.on .tick::before { content: '✓'; }
+.dir-b .or { display: flex; align-items: center; gap: 10px; margin: 10px 0 2px; font: 700 11px/1 var(--font-text); letter-spacing: .14em; text-transform: uppercase; color: var(--text-muted); }
+.dir-b .or::before, .dir-b .or::after { content: ''; flex: 1; border-top: 2px solid var(--rule-line); }
+.dir-b .intents span { box-shadow: inset 0 0 0 2px var(--rule-line); font: 700 12px/1 var(--font-text); letter-spacing: .08em; text-transform: uppercase; color: var(--text); }
+.dir-b .settings > span { padding: 7px 9px; box-shadow: inset 0 0 0 1.5px var(--rule-line); border-radius: var(--radius-s); font: 700 11px/1 var(--font-text); letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); }
+.dir-b .settings b { color: var(--text); margin-left: 4px; }
+.dir-b .counter { text-align: center; line-height: 1; }
+.dir-b .counter .from { font: 700 13px/1 var(--font-text); color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.dir-b .counter .arrow { color: var(--text-muted); margin: 0 2px; }
+.dir-b .counter b { font: 800 30px/1 var(--font-display); font-stretch: 75%; font-variant-numeric: tabular-nums; color: var(--yes); }
+.dir-b .counter .lbl { display: block; font: 700 9px/1 var(--font-text); letter-spacing: .16em; text-transform: uppercase; color: var(--text-muted); margin-top: 3px; }
+.dir-b .card { border-radius: var(--card-radius); background: var(--field); color: var(--on-field); padding: 18px; border: 2px solid rgba(0,0,0,.4); }
+.dir-b .card.behind { transform: rotate(-3deg) translateY(8px); filter: brightness(.6) saturate(.8); }
+.dir-b .card .top-line { display: flex; justify-content: space-between; align-items: center; }
+.dir-b .card .top-line .t-label:first-child { padding: 5px 8px; background: var(--on-field); color: #16120F; transform: rotate(-2deg); box-shadow: 2px 2px 0 rgba(0,0,0,.45); }
+.dir-b .card .top-line .t-label:last-child { color: var(--on-field-muted); }
+.dir-b .card .t-display-l { margin: auto 0 8px; }
+.dir-b .card .arch { font: 600 16px/1.2 var(--font-text); margin: 0 0 12px; color: var(--on-field-muted); }
+.dir-b .card .tags { margin: 0 0 12px; color: var(--on-field-muted); }
+.dir-b .bignum { top: 44px; right: 10px; font: 800 220px/.8 var(--font-display); font-stretch: 75%; color: transparent; -webkit-text-stroke: 2px color-mix(in oklab, var(--on-field) 28%, transparent); }
+.dir-b .spice { margin-bottom: 14px; color: var(--on-field); }
+.dir-b .spice .unit { width: 20px; height: 8px; background: var(--on-field); }
+.dir-b .spice .unit svg { display: none; }
+.dir-b .spice .word { margin-left: 6px; }
+.dir-b .card .foot { border-top: 2px solid color-mix(in oklab, var(--on-field) 40%, transparent); padding-top: 10px; }
+.dir-b .card .foot .leader { opacity: 0; }
+.dir-b .card .t-caption { color: var(--on-field-muted); }
+.dir-b .stamp { top: 18px; padding: 10px 14px; font: 800 32px/1 var(--font-display); font-stretch: 75%; text-transform: uppercase; box-shadow: var(--shadow-hard); }
+.dir-b .stamp.yes { right: 14px; background: var(--yes); color: var(--on-yes); }
+.dir-b .stamp.no { left: 14px; background: var(--no); color: #16120F; }
+.dir-b .stamp.yes::before { content: '✓ '; }
+.dir-b .stamp.no::before { content: '✕ '; }
+.dir-b .vote { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 60px; border: 0; border-radius: var(--radius-s); cursor: pointer; font: 800 20px/1 var(--font-display); font-stretch: 80%; text-transform: uppercase; }
+.dir-b .vote.no { background: transparent; color: var(--no); box-shadow: inset 0 0 0 2px var(--no); }
+.dir-b .vote.yes { background: var(--yes); color: var(--on-yes); box-shadow: var(--shadow-hard); }
+.dir-b .vote svg { width: 22px; height: 22px; stroke-width: 3; }
+.dir-b .match-title { font: 800 54px/.86 var(--font-display); font-stretch: 75%; text-transform: uppercase; color: var(--accent); margin: 8px 0 12px; }
+.dir-b .result { background: var(--field); color: var(--on-field); padding: 14px 16px; border-radius: var(--card-radius); }
+.dir-b .badge { display: inline-block; padding: 6px 9px; background: var(--yes); color: var(--on-yes); font: 800 11px/1 var(--font-text); letter-spacing: .1em; text-transform: uppercase; transform: rotate(-2deg); }
+.dir-b .result .t-display-xl { margin: 8px 0 6px; }
+.dir-b .result .t-caption, .dir-b .result .leader { color: var(--on-field-muted); }
+.dir-b .result .t-lead { margin: 8px 0 4px; }
+.dir-b .why { font: 700 11px/1 var(--font-text); letter-spacing: .12em; text-transform: uppercase; color: var(--on-field-muted); margin: 8px 0 4px; }
+.dir-b .reasons { font: 500 13px/1.35 var(--font-text); }
+.dir-b .reasons li { padding: 2px 0; }
+.dir-b .reasons li::before { content: '✓'; font-weight: 800; color: var(--yes); }
+.dir-b .reasons li.avoided::before { content: '✕'; color: var(--on-field); }
+.dir-b .alsoat { margin: 12px 0 0; }
+.dir-b .runners > div { box-shadow: inset 0 0 0 2px var(--rule-line); font: 800 15px/.95 var(--font-display); font-stretch: 80%; text-transform: uppercase; }
+.dir-b .runners small { display: block; font: 700 9px/1 var(--font-text); letter-spacing: .12em; color: var(--text-muted); margin-bottom: 4px; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   DIRECTION C · CAFÉ MENU (from the product owner's DESIGN.md; reference only)
+   "The food is the only decoration." Near-white canvas, one system sans, dark green ink,
+   pale dish-coloured cards, lots of space. Flat; no texture; sentence case.
+   ══════════════════════════════════════════════════════════════════════════ */
+.dir-c {
+  --canvas: #FCFBF8; --surface: #FFFFFF; --ink: #26302A; --ink-muted: #6B6F66; --line: #E7E4DC; --olive: #55612F; --chilli: #B8502C;
+  --bg: var(--canvas); --text: var(--ink); --text-muted: var(--ink-muted); --rule-line: var(--line);
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --r-panel: 28px; --r-card: 22px; --r-tile: 14px;
+  --lift: 0 12px 28px -14px rgba(38,48,42,.35);
+  background: var(--canvas); color: var(--ink);
+}
+/* Fallback until the contrast-checked tint is computed in script (see buildTints below). */
+.dir-c [style*='--tint'] { --tint-bg: color-mix(in oklab, var(--tint) 18%, var(--canvas)); }
+.dir-c .col-label { font-family: var(--font); letter-spacing: 0; text-transform: none; font-size: 13px; }
+.dir-c .phone, .dir-c .panel { background: var(--canvas); color: var(--ink); font-family: var(--font); }
+.dir-c .panel { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; }
+.dir-c .panel h3 { font-family: var(--font); letter-spacing: 0; text-transform: none; font-size: 13px; opacity: 1; color: var(--ink-muted); }
+.dir-c .texture { background: var(--canvas); border: 1px solid var(--line); }
+.dir-c .t-display-xl, .dir-c .t-display-l { font: 600 26px/30px var(--font); }
+.dir-c .t-title { font: 600 28px/34px var(--font); }
+.dir-c .t-title em { font-style: normal; color: inherit; }
+.dir-c .t-body { font: 400 16px/24px var(--font); }
+.dir-c .t-lead { font: 400 16px/24px var(--font); }
+.dir-c .t-label { font: 500 13px/18px var(--font); color: var(--ink-muted); }
+.dir-c .t-caption { font: 500 13px/18px var(--font); color: var(--ink-muted); font-variant-numeric: tabular-nums; }
+.dir-c .t-price { font: 600 18px/22px var(--font); font-variant-numeric: tabular-nums; }
+.dir-c .wordmark { font: 600 17px/1 var(--font); }
+.dir-c .muted { color: var(--ink-muted); }
+.dir-c svg.i { stroke-width: 1.75; }
+/* buttons */
+.dir-c .btn { font: 600 16px/1 var(--font); border-radius: 999px; min-height: 52px; }
+.dir-c .btn-primary { background: var(--ink); color: #fff; }
+.dir-c .btn-primary:active, .dir-c .btn-primary.is-pressed { background: #1a221d; }
+.dir-c .btn-secondary { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.dir-c .btn-tertiary { background: none; min-height: 44px; padding: 0 6px; font: 600 16px/1 var(--font); color: var(--ink); }
+.dir-c .btn-tertiary:active { text-decoration: underline; }
+.dir-c .btn[disabled] { background: transparent; color: var(--ink-muted); box-shadow: inset 0 0 0 1.5px var(--line); }
+.dir-c .btn-icon { width: 52px; }
+.dir-c .is-focus, .dir-c :focus-visible { outline: 3px solid var(--olive); outline-offset: 2px; }
+/* welcome: three dish tiles, neatly stacked; no rotation, no shadows */
+.dir-c .fan { display: flex; flex-direction: column; gap: 8px; margin: 20px 0; }
+.dir-c .fan > div { position: static; transform: none; width: auto; height: auto; min-height: 76px; justify-content: flex-end; gap: 2px; padding: 14px 16px; border-radius: var(--r-card); background: var(--tint-bg); }
+.dir-c .fan .t-display-l { font-size: 20px; line-height: 26px; }
+/* craving: wrapping chips, settings as rows */
+.dir-c .moods { display: flex; flex-wrap: wrap; gap: 8px; }
+.dir-c .moods li { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 16px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font: 400 16px/24px var(--font); }
+.dir-c .moods li.on { background: var(--olive); color: #fff; box-shadow: none; }
+.dir-c .moods li.on .tick::before { content: '✓'; font-weight: 600; }
+.dir-c .or { margin: 16px 0 8px; font: 400 14px/20px var(--font); color: var(--ink-muted); }
+.dir-c .intents { gap: 8px; justify-content: flex-start; }
+.dir-c .intents span { flex: none; padding: 0 16px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font: 400 16px/24px var(--font); }
+.dir-c .settings { flex-direction: column; flex-wrap: nowrap; gap: 0; justify-content: flex-start; margin: auto 0 16px; }
+.dir-c .settings > span { display: flex; align-items: center; min-height: 48px; border-bottom: 1px solid var(--line); font: 400 16px/24px var(--font); }
+.dir-c .settings > span:first-child { border-top: 1px solid var(--line); }
+.dir-c .settings b { margin-left: auto; font-weight: 400; color: var(--ink-muted); }
+.dir-c .settings .chev { display: block; width: 20px; height: 20px; margin-left: 8px; color: var(--ink-muted); }
+/* deck */
+.dir-c .counter .from, .dir-c .counter .arrow { display: none; }
+.dir-c .counter { font: 500 14px/20px var(--font); font-variant-numeric: tabular-nums; }
+.dir-c .counter b { font-weight: 600; margin-right: 4px; }
+.dir-c .topbar .iconbtn.t-label { font: 500 14px/20px var(--font); color: var(--ink); }
+.dir-c .card { border-radius: var(--r-card); background: var(--tint-bg); padding: 20px; }
+.dir-c .card.top { box-shadow: var(--lift); }
+.dir-c .card.behind { transform: scale(.96); }
+.dir-c .bignum, .dir-c .card .cardno { display: none; }
+.dir-c .card .top-line { order: 1; margin-top: auto; }
+.dir-c .card .t-display-l { order: 2; margin: 2px 0 4px; }
+.dir-c .card .arch { order: 3; margin: 0 0 12px; font: 400 14px/20px var(--font); color: var(--ink-muted); }
+.dir-c .card .tags { order: 4; display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
+.dir-c .card .tags span { padding: 3px 10px; border-radius: var(--r-tile); background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); color: var(--ink); }
+.dir-c .spice { order: 5; margin-bottom: 14px; color: var(--chilli); }
+.dir-c .spice .unit svg { width: 16px; height: 16px; }
+.dir-c .spice .word { margin-left: 6px; color: var(--ink-muted); }
+.dir-c .card .foot { order: 6; }
+.dir-c .card .foot .leader { opacity: 0; }
+.dir-c .meta { gap: 16px; margin-top: 6px; }
+.dir-c .meta svg.i { color: var(--ink-muted); }
+.dir-c .stamp { top: 20px; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 16px; border-radius: 999px; font: 600 16px/1 var(--font); }
+.dir-c .stamp.yes { right: 20px; background: var(--olive); color: #fff; }
+.dir-c .stamp.no { left: 20px; background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.dir-c .stamp.yes::before { content: '✓'; }
+.dir-c .stamp.no::before { content: '✕'; }
+.dir-c .actions { grid-template-columns: 1fr auto 1fr; }
+.dir-c .vote { display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 52px; border: 0; border-radius: 999px; cursor: pointer; font: 600 16px/1 var(--font); }
+.dir-c .vote.no { background: transparent; color: var(--ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.dir-c .vote.yes { background: var(--olive); color: #fff; }
+/* match: photo area on the tint, details on canvas */
+.dir-c .match-title { font: 600 28px/34px var(--font); margin: 4px 0 12px; }
+.dir-c .result { background: none; padding: 0; }
+.dir-c .result .photo { display: block; height: 100px; border-radius: var(--r-card); background: var(--tint-bg); margin-bottom: 14px; }
+.dir-c .badge { display: inline-flex; align-items: center; min-height: 28px; padding: 0 12px; border-radius: 999px; background: var(--surface); box-shadow: inset 0 0 0 1px var(--line); font: 500 13px/18px var(--font); color: var(--olive); }
+.dir-c .result .t-display-xl { margin: 8px 0 2px; }
+.dir-c .offer span { display: block; }
+.dir-c .offer span:first-child { display: none; } /* the offering repeats the dish name here; C shows the restaurant only (brief: dish name, restaurant, price) */
+.dir-c .result .leader { opacity: 0; }
+.dir-c .result .t-lead { margin: 12px 0 0; }
+.dir-c .why { font: 600 18px/24px var(--font); margin: 14px 0 4px; }
+.dir-c .reasons { font: 400 14px/20px var(--font); }
+.dir-c .reasons li { padding: 3px 0; }
+.dir-c .reasons li::before { content: '✓'; color: var(--olive); font-weight: 700; }
+.dir-c .reasons li.avoided::before { content: '✕'; color: var(--ink-muted); }
+.dir-c .alsoat { margin: 12px 0 0; }
+.dir-c .alsoat span + span::before { content: ', '; }
+.dir-c .alsoat span:first-child::before { content: ' '; }
+.dir-c .runners > div { border-radius: var(--r-tile); background: var(--tint-bg); font: 600 14px/20px var(--font); }
+.dir-c .runners small { display: block; font: 500 13px/18px var(--font); color: var(--ink-muted); }
+.dir-c .match-actions { grid-template-columns: 1fr 1fr 52px; }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Motion. Each direction has its own character; reduced motion swaps in fades.
+   ══════════════════════════════════════════════════════════════════════════ */
+.dir-a { --fly-dur: 420ms; --fly-ease: cubic-bezier(.3,.7,.2,1); }
+.dir-b { --fly-dur: 260ms; --fly-ease: cubic-bezier(.5,0,.75,0); }
+.dir-c { --fly-dur: 280ms; --fly-ease: cubic-bezier(.2,.6,.3,1); }
+.card.fly-right, .card.fly-left { transition: transform var(--fly-dur) var(--fly-ease), opacity var(--fly-dur) linear; }
+.dir-a .card.fly-right { transform: translate(140%, 30px) rotate(10deg) !important; opacity: 0; }
+.dir-a .card.fly-left { transform: translate(-140%, 30px) rotate(-10deg) !important; opacity: 0; }
+.dir-b .card.fly-right { transform: translate(160%, -40px) rotate(18deg) !important; }
+.dir-b .card.fly-left { transform: translate(-160%, -40px) rotate(-18deg) !important; }
+.dir-c .card.fly-right { transform: translate(130%, 0) rotate(6deg) !important; }
+.dir-c .card.fly-left { transform: translate(-130%, 0) rotate(-6deg) !important; }
+.dir-a .card.reset { transition: transform 380ms cubic-bezier(.2,.9,.3,1.1); }
+.dir-b .card.reset { transition: transform 380ms cubic-bezier(.2,1.6,.4,1); }
+.dir-c .card.reset { transition: transform 200ms ease-out; }
+.dir-c .card.behind.settle { animation: c-settle 200ms ease-out; }
+@keyframes c-settle { from { transform: scale(.96); } to { transform: scale(1); } }
+.dir-a .stamp.thunk { animation: a-thunk 220ms ease-out forwards; }
+@keyframes a-thunk { 0% { opacity: 0; scale: 1.35; } 60% { opacity: 1; scale: .96; } 100% { opacity: 1; scale: 1; } }
+.dir-b .stamp.thunk.yes { animation: b-slam-r 180ms cubic-bezier(.2,1.4,.4,1) forwards; }
+.dir-b .stamp.thunk.no { animation: b-slam-l 180ms cubic-bezier(.2,1.4,.4,1) forwards; }
+@keyframes b-slam-r { from { opacity: 0; transform: translateX(60px); } to { opacity: 1; transform: none; } }
+@keyframes b-slam-l { from { opacity: 0; transform: translateX(-60px); } to { opacity: 1; transform: none; } }
+.dir-c .stamp.thunk { animation: rm-fade 120ms linear forwards; }
+.dir-a .scr-match.revealing .result { animation: a-print 720ms cubic-bezier(.2,.7,.2,1) both; }
+@keyframes a-print { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 -10px 0); } }
+.dir-a .scr-match.revealing .reasons li { animation: a-line 300ms ease-out both; }
+.dir-a .scr-match.revealing .reasons li:nth-child(1) { animation-delay: 420ms; }
+.dir-a .scr-match.revealing .reasons li:nth-child(2) { animation-delay: 480ms; }
+.dir-a .scr-match.revealing .reasons li:nth-child(3) { animation-delay: 540ms; }
+.dir-a .scr-match.revealing .reasons li:nth-child(4) { animation-delay: 600ms; }
+@keyframes a-line { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.dir-b .scr-match.revealing .match-title { animation: b-pop 420ms cubic-bezier(.2,1.5,.4,1) both; }
+@keyframes b-pop { from { opacity: 0; transform: scale(1.35); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
+.dir-b .scr-match.revealing .result { animation: b-flood 380ms cubic-bezier(.3,.8,.3,1) 160ms both; }
+@keyframes b-flood { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+.dir-b .scr-match.revealing .badge { animation: b-stick 260ms cubic-bezier(.2,1.8,.4,1) 460ms both; }
+@keyframes b-stick { from { opacity: 0; transform: rotate(-12deg) scale(1.6); } to { opacity: 1; transform: rotate(-2deg); } }
+.dir-c .scr-match.revealing .photo { animation: c-photo 300ms ease-out both; }
+@keyframes c-photo { from { opacity: 0; transform: scale(.97); } to { opacity: 1; transform: none; } }
+.dir-a .moods li { transition: background 160ms ease-out, color 160ms ease-out; }
+.dir-b .moods li { transition: transform 180ms cubic-bezier(.2,1.6,.4,1), box-shadow 180ms, background 120ms; }
+.dir-c .moods li { transition: background 150ms ease-out, color 150ms ease-out; }
+/* Reduced motion: the OS preference or the page toggle */
+.rm .card.fly-right, .rm .card.fly-left { transform: none !important; opacity: 0; transition: opacity 150ms linear !important; }
+.rm .card.reset, .rm .moods li { transition: opacity 150ms linear !important; }
+.rm .card.behind.settle { animation: none; }
+.rm .stamp.thunk, .rm .stamp.thunk.yes, .rm .stamp.thunk.no { animation: rm-fade 150ms linear forwards !important; }
+.rm .scr-match.revealing *, .rm .scr-match.revealing .result { animation: rm-fade 150ms linear both !important; }
+@keyframes rm-fade { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</head>
+<body>
+<div class="doc">
+  <h1>M1.1 · Three visual directions</h1>
+  <p class="lede">
+    Every screen below comes from <strong>one shared template</strong>, rendered three times. The copy, dishes, prices, labels and information
+    hierarchy are identical. Only the visual system differs. The shared copy follows Direction C's plain-copy rules, so the comparison stays fair.
+    Direction C is built from the product owner's <code>direction-c-DESIGN.md</code> (reference only, not adopted). The dish shown is real engine
+    output. You can drag the dish cards, replay the motion, and preview reduced motion.
+  </p>
+  <div class="toolbar">
+    <span class="show">Show</span>
+    <div class="seg" role="group" aria-label="Directions to show">
+      <button type="button" data-toggle="a" aria-pressed="true">A · Order Pad</button>
+      <button type="button" data-toggle="b" aria-pressed="true">B · Night Market</button>
+      <button type="button" data-toggle="c" aria-pressed="true">C · Café Menu</button>
+    </div>
+    <div class="seg" role="group" aria-label="Direction C tint rule">
+      <button type="button" data-tintmode="strict" aria-pressed="true">C tints: strict AA</button>
+      <button type="button" data-tintmode="ink" aria-pressed="false">C tints: ink-only (brief formula)</button>
+    </div>
+    <label><input type="checkbox" id="rm" /> Preview reduced motion</label>
+    <nav aria-label="Sections">
+      <a href="#welcome">Welcome</a><a href="#craving">Craving</a><a href="#deck">Card &amp; YES/NOPE</a><a href="#match">Match</a>
+      <a href="#buttons">Buttons</a><a href="#type">Type</a><a href="#material">Colour · texture · motion</a><a href="#diff">Differences</a>
+    </nav>
+  </div>
+
+  <section class="row" id="welcome"><h2>1 · Welcome</h2><p class="note">Primary "Just me", secondary "Saved dishes". The dishes shown are the no-photo placeholder: dish colour plus name.</p><div class="pair" data-template="t-welcome"></div></section>
+  <section class="row" id="craving"><h2>2 · Craving selection</h2><p class="note">Seven moods (up to two; click to toggle), two intents, the remembered settings, and the primary CTA.</p><div class="pair" data-template="t-craving"></div></section>
+  <section class="row" id="deck"><h2>3 · Dish card &amp; YES / NOPE</h2><p class="note">Drag the card, press ← / → while it's focused, or use the buttons. This typographic, tinted card is what M1 ships until photos exist.</p><div class="pair" data-template="t-deck"></div></section>
+  <section class="row" id="match"><h2>4 · Match Found</h2><p class="note">The reasons are the engine's text, verbatim. Primary "Order", secondary "Directions", Save, and "Show me something else".</p><div class="pair" data-template="t-match"></div></section>
+  <section class="row" id="buttons"><h2>5 · Primary CTA, secondary action &amp; states</h2><div class="pair" data-template="t-buttons"></div></section>
+  <section class="row" id="type"><h2>6 · Typography hierarchy</h2><p class="note">The same roles and sample strings in all three.</p><div class="pair" data-template="t-type"></div></section>
+  <section class="row" id="material"><h2>7 · Colour, texture &amp; motion</h2><p class="note">For C, the dish tints are computed and contrast-checked in script (see the "Dish tints" list in C's colour panel).</p><div class="pair" data-template="t-material"></div></section>
+
+  <section class="row" id="diff">
+    <h2>8 · Exact differences</h2>
+    <div class="table-scroll">
+    <table class="diff">
+      <thead><tr><th>Aspect</th><th>A · Order Pad</th><th>B · Night Market</th><th>C · Café Menu</th></tr></thead>
+      <tbody>
+        <tr><td>Concept</td><td>A knowing waiter with a notepad: editorial, tactile, witty</td><td>A hype friend at a night market: graphic, loud, fast</td><td>"The food is the only decoration": calm, fresh, a well-run café menu</td></tr>
+        <tr><td>Source</td><td>Proposed by me (M1.1)</td><td>Proposed by me (M1.1)</td><td>The product owner's DESIGN.md, as reference</td></tr>
+        <tr><td>Theme</td><td>Light warm paper <code>#F3ECDF</code>, ink <code>#1D1A16</code></td><td>Dark <code>#16120F</code>, bone <code>#F6EFE6</code></td><td>Near-white canvas <code>#FCFBF8</code>, dark green ink <code>#26302A</code></td></tr>
+        <tr><td>Accent logic</td><td>Paprika <code>#B53A25</code>: emphasis, YES, heat</td><td>Chilli action, lime YES, bone NOPE</td><td>Olive <code>#55612F</code>: YES, selected, focus. Chilli <code>#B8502C</code> for spice only. Ink for the primary button</td></tr>
+        <tr><td>Typefaces</td><td>Fraunces + Instrument Sans (bundled)</td><td>Bricolage Grotesque (bundled)</td><td>System UI font. Nothing to download; a brand face could replace one token later</td></tr>
+        <tr><td>Type voice</td><td>Sentence case, italic emphasis word, tracked caps labels</td><td>UPPERCASE condensed display, tracked caps labels</td><td>Sentence case only; no emphasis word; no caps or tracking</td></tr>
+        <tr><td>Dish colour use</td><td>20–22% tint on paper, hairline border, soft shadow</td><td>Flat field darkened 30%, hard edge</td><td>An 18% oklab tint on canvas, <em>reduced automatically until ink and muted text both pass 4.5:1</em></td></tr>
+        <tr><td>No-photo placeholder</td><td>Huge faint italic numeral</td><td>Huge outlined numeral</td><td>Empty tint (no numeral, per brief); name bottom-left, cuisine above it</td></tr>
+        <tr><td>Multi-part strings</td><td>Dot-separated</td><td>Dot-separated</td><td>Icons + 16 px space (meta), chips (tags), commas</td></tr>
+        <tr><td>Spice</td><td>Chilli glyphs, paprika</td><td>Bar segments</td><td>Chilli glyphs in chilli + "Very hot" in muted text</td></tr>
+        <tr><td>Craving control</td><td>Order-pad list with tick boxes</td><td>2-column poster tiles</td><td>Wrapping pill chips (olive + ✓ when selected); settings as rows with a chevron</td></tr>
+        <tr><td>Primary CTA</td><td>Ink block, 3 px corners, printed lip</td><td>Chilli block, hard offset shadow</td><td>Ink pill, 52 px, full width</td></tr>
+        <tr><td>Secondary</td><td>1.5 px ink outline</td><td>2 px bone outline</td><td>1.5 px ink outline pill</td></tr>
+        <tr><td>YES / NOPE</td><td>Rubber stamps</td><td>Slam-in poster blocks</td><td>Pill labels fade in on the leading side ("✓ Yes" olive, "✕ Nope" outline)</td></tr>
+        <tr><td>Counter</td><td>"108" struck, "23 left"</td><td>"108 → 23 left", lime</td><td>"23 left" only</td></tr>
+        <tr><td>Match Found</td><td>A receipt slip</td><td>A headline poster</td><td>Tinted photo area on top; details on canvas; "Why this one" section; tinted "Or try" tiles</td></tr>
+        <tr><td>Texture / depth</td><td>Paper grain; soft shadows</td><td>Fine grain; hard shadows</td><td>None. Flat; one soft lift shadow on the top swipe card only</td></tr>
+        <tr><td>Corners</td><td>3–6 px</td><td>2–4 px</td><td>Pills, 22 px cards, 14 px tiles/chips</td></tr>
+        <tr><td>Motion</td><td>Ease-out, ≤ 8° tilt, stamp thunk, receipt prints</td><td>Springs, ≤ 12° tilt, slam, pop + flood</td><td>≤ 6° tilt, 280 ms slide off, next card settles 200 ms, photo fades 0.97 → 1 (300 ms)</td></tr>
+        <tr><td>Main risk</td><td>Could read as "restaurant/menu"</td><td>Tiring over time; dark theme outdoors</td><td>Most dependent on real photos: without them it can look plain or generic; personality rests on the future photography</td></tr>
+        <tr><td>With real photos</td><td>Photos framed on paper</td><td>Full-bleed; demanding</td><td>Cut-out plates on the tint, consistent angle, one contact shadow. Designed for this</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <h2 style="margin-top:24px">Identical in all three (by construction)</h2>
+    <div class="shared">
+      Screen structure, every string of copy and every label, the dishes, prices and distances, the explanation text (engine output, verbatim), the icons,
+      44 px minimum targets, YES/NOPE never colour-only (a word + a glyph + a side), tabular numerals, the reduced-motion fades, and the placeholder product name
+      (a single constant, not part of any system). A column may <em>omit</em> a decorative element its own brief forbids (C's giant numeral, "Card 4" label,
+      and the offering name that repeats the dish name), and says so in the table above.
+    </div>
+  </section>
+</div>
+
+<!-- ═══════════════ Shared templates: identical content for every direction ═══════════════ -->
+<template id="t-welcome">
+  <div class="phone">
+    <div class="statusbar"><span>21:30</span><span>●●● ▮</span></div>
+    <div class="screen">
+      <div class="topbar"><span class="wordmark" data-name></span><button class="iconbtn" type="button" aria-label="Saved dishes"><svg class="i" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg></button></div>
+      <h1 class="t-title" style="margin:18px 0 8px">Hungry, but not sure <em>what for?</em></h1>
+      <p class="t-body muted" style="margin:0">Swipe a few dishes and we'll work out what you want.</p>
+      <div class="fan" aria-hidden="true">
+        <div style="--tint:#c8894a"><span class="t-label">Japanese</span><span class="t-display-l">Tonkotsu ramen</span></div>
+        <div style="--tint:#4f7a34"><span class="t-label">Thai</span><span class="t-display-l">Chicken larb</span></div>
+        <div style="--tint:#9b4a22"><span class="t-label">Korean</span><span class="t-display-l">Seoul Fire Wings</span></div>
+      </div>
+      <button class="btn btn-primary" type="button">Just me</button>
+      <button class="btn btn-secondary" type="button" style="margin-top:10px">Saved dishes</button>
+    </div>
+  </div>
+</template>
+
+<template id="t-craving">
+  <div class="phone">
+    <div class="statusbar"><span>21:30</span><span>●●● ▮</span></div>
+    <div class="screen">
+      <div class="topbar"><span class="wordmark" data-name></span><span class="t-label muted">Step 1 of 2</span></div>
+      <h1 class="t-title" style="margin:10px 0 6px">What do you feel like <em>eating?</em></h1>
+      <p class="t-body muted" style="margin:0 0 12px">Pick up to two, or skip.</p>
+      <ul class="moods" data-moods>
+        <li class="on"><span class="tick" aria-hidden="true"></span>Spicy</li>
+        <li class="on"><span class="tick" aria-hidden="true"></span>Comforting</li>
+        <li><span class="tick" aria-hidden="true"></span>Carby</li>
+        <li><span class="tick" aria-hidden="true"></span>Fresh</li>
+        <li><span class="tick" aria-hidden="true"></span>Indulgent</li>
+        <li><span class="tick" aria-hidden="true"></span>Warm &amp; soupy</li>
+        <li><span class="tick" aria-hidden="true"></span>Sweet</li>
+      </ul>
+      <p class="or">or</p>
+      <div class="intents"><span>Something new</span><span>No idea</span></div>
+      <div class="settings">
+        <span>Diet<b>None</b><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span>
+        <span>Budget<b>Any</b><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span>
+        <span>Eating<b>Either</b><svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></span>
+      </div>
+      <button class="btn btn-primary" type="button">Show me dishes</button>
+    </div>
+  </div>
+</template>
+
+<template id="t-deck">
+  <div class="phone">
+    <div class="statusbar"><span>21:30</span><span>●●● ▮</span></div>
+    <div class="screen">
+      <div class="topbar">
+        <button class="iconbtn t-label" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M9 14 4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 0 12h-3"/></svg>Undo</button>
+        <div class="counter" aria-live="polite"><span class="from">108</span><span class="arrow">→</span><b>23</b><span class="lbl">left</span></div>
+        <button class="iconbtn t-label" type="button">Decide for me</button>
+      </div>
+      <div class="stack">
+        <article class="card behind" style="--tint:#4f7a34" aria-hidden="true">
+          <div class="top-line"><span class="t-label">Thai</span><span class="t-label cardno">Card 5</span></div>
+          <span class="t-display-l">Chicken larb</span>
+        </article>
+        <article class="card top" style="--tint:#9b4a22" tabindex="0" aria-label="Seoul Fire Wings. Korean fried chicken. Seoul Fire, £13.95, 30 minutes delivery, 2.2 miles. Spice 4 of 4, very hot. Arrow right for yes, arrow left for nope.">
+          <span class="bignum" aria-hidden="true">4</span>
+          <span class="stamp yes" aria-hidden="true">Yes</span>
+          <span class="stamp no" aria-hidden="true">Nope</span>
+          <div class="top-line"><span class="t-label">Korean</span><span class="t-label cardno">Card 4</span></div>
+          <span class="t-display-l">Seoul Fire Wings</span>
+          <p class="arch">Korean fried chicken</p>
+          <p class="tags t-label"><span>Crispy</span><span>Saucy</span><span>Sweet heat</span></p>
+          <div class="spice t-label" aria-hidden="true">
+            <span class="unit"><svg viewBox="0 0 24 24"><path d="M15 3.5c1.2-.2 2.3.6 2.2 1.7 2.5 1 3.8 3.6 3.1 6.5-1 4.5-6.6 8.5-13.3 8.8-1 0-1.4-1.2-.6-1.8 3.6-2.5 5.8-5.7 6.2-9.3.2-1.8 1.3-3.2 2.8-3.9-.3-.7-.6-1.6-.4-2z"/></svg></span>
+            <span class="unit"><svg viewBox="0 0 24 24"><path d="M15 3.5c1.2-.2 2.3.6 2.2 1.7 2.5 1 3.8 3.6 3.1 6.5-1 4.5-6.6 8.5-13.3 8.8-1 0-1.4-1.2-.6-1.8 3.6-2.5 5.8-5.7 6.2-9.3.2-1.8 1.3-3.2 2.8-3.9-.3-.7-.6-1.6-.4-2z"/></svg></span>
+            <span class="unit"><svg viewBox="0 0 24 24"><path d="M15 3.5c1.2-.2 2.3.6 2.2 1.7 2.5 1 3.8 3.6 3.1 6.5-1 4.5-6.6 8.5-13.3 8.8-1 0-1.4-1.2-.6-1.8 3.6-2.5 5.8-5.7 6.2-9.3.2-1.8 1.3-3.2 2.8-3.9-.3-.7-.6-1.6-.4-2z"/></svg></span>
+            <span class="unit"><svg viewBox="0 0 24 24"><path d="M15 3.5c1.2-.2 2.3.6 2.2 1.7 2.5 1 3.8 3.6 3.1 6.5-1 4.5-6.6 8.5-13.3 8.8-1 0-1.4-1.2-.6-1.8 3.6-2.5 5.8-5.7 6.2-9.3.2-1.8 1.3-3.2 2.8-3.9-.3-.7-.6-1.6-.4-2z"/></svg></span>
+            <span class="word">Very hot</span>
+          </div>
+          <div class="foot">
+            <div class="meta-line"><span class="t-body">Seoul Fire</span><span class="leader"></span><span class="t-price">£13.95</span></div>
+            <p class="meta t-caption"><span><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>30 min delivery</span><span><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-6-5.4-6-10a6 6 0 0 1 12 0c0 4.6-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></svg>2.2 mi</span></p>
+          </div>
+        </article>
+      </div>
+      <div class="actions">
+        <button class="vote no" type="button" data-vote="left"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>Nope</button>
+        <button class="btn btn-tertiary" type="button">That's the one</button>
+        <button class="vote yes" type="button" data-vote="right"><svg class="i" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Yes</button>
+      </div>
+    </div>
+  </div>
+  <div class="controls"><button type="button" data-vote="left">Replay NOPE</button><button type="button" data-vote="right">Replay YES</button></div>
+</template>
+
+<template id="t-match">
+  <div class="phone">
+    <div class="statusbar"><span>21:31</span><span>●●● ▮</span></div>
+    <div class="screen scr-match">
+      <h1 class="match-title">Match found</h1>
+      <div class="result" style="--tint:#4f7a34">
+        <div class="photo" aria-hidden="true"></div>
+        <span class="badge">Strong match</span>
+        <p class="t-display-xl">Chicken larb</p>
+        <div class="meta-line"><span class="t-body offer"><span>Chicken Larb</span><span>Lemongrass &amp; Lime</span></span><span class="leader"></span><span class="t-price">£10.95</span></div>
+        <p class="meta t-caption"><span><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l2.5 2"/></svg>10 min walk</span><span><svg class="i" viewBox="0 0 24 24"><path d="M12 21s-6-5.4-6-10a6 6 0 0 1 12 0c0 4.6-6 10-6 10z"/><circle cx="12" cy="11" r="2"/></svg>0.5 mi</span></p>
+        <p class="t-lead">We think you're craving something fiery, fresh and crunchy.</p>
+        <h2 class="why">Why this one</h2>
+        <ul class="reasons">
+          <li>You said yes to both Thai dishes.</li>
+          <li>You said yes to both salads.</li>
+          <li>You said yes to both fiery dishes.</li>
+          <li class="avoided">You passed on all 3 dishes with no heat.</li>
+        </ul>
+      </div>
+      <p class="alsoat t-caption">Also at<span>Soi Seven</span><span>Isaan Larb Gai</span><span>£10.50</span></p>
+      <div class="runners">
+        <div style="--tint:#b98a4e"><small>Or try</small>Sea bass ceviche</div>
+        <div style="--tint:#c9783c"><small>Or try</small>Tom yum soup</div>
+      </div>
+      <div class="match-actions" style="margin-top:12px">
+        <button class="btn btn-primary" type="button">Order</button>
+        <button class="btn btn-secondary" type="button">Directions</button>
+        <button class="btn btn-secondary btn-icon" type="button" aria-label="Save"><svg class="i" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg></button>
+      </div>
+      <button class="btn btn-tertiary" type="button" style="align-self:center">Show me something else</button>
+    </div>
+  </div>
+  <div class="controls"><button type="button" data-reveal>Replay match reveal</button></div>
+</template>
+
+<template id="t-buttons">
+  <div class="panel">
+    <h3>Buttons</h3>
+    <div class="btn-grid">
+      <button class="btn btn-primary" type="button">Show me dishes</button><span class="lab">Primary CTA</span>
+      <button class="btn btn-primary is-pressed" type="button">Show me dishes</button><span class="lab">Primary, pressed</span>
+      <button class="btn btn-primary is-focus" type="button">Show me dishes</button><span class="lab">Primary, keyboard focus</span>
+      <button class="btn btn-secondary" type="button">Directions</button><span class="lab">Secondary action</span>
+      <button class="btn btn-secondary" type="button" disabled>Directions</button><span class="lab">Disabled</span>
+      <button class="btn btn-tertiary" type="button">Show me something else</button><span class="lab">Text button</span>
+      <button class="vote no" type="button"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>Nope</button><span class="lab">NOPE (word + ✕ + left)</span>
+      <button class="vote yes" type="button"><svg class="i" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>Yes</button><span class="lab">YES (word + ✓ + right)</span>
+    </div>
+  </div>
+</template>
+
+<template id="t-type">
+  <div class="panel">
+    <h3>Type roles</h3>
+    <div class="type-row"><span class="lab">Match dish name<span class="spec" data-spec="xl"></span></span><span class="t-display-xl">Chicken larb</span></div>
+    <div class="type-row"><span class="lab">Card dish name<span class="spec" data-spec="l"></span></span><span class="t-display-l">Seoul Fire Wings</span></div>
+    <div class="type-row"><span class="lab">Screen title<span class="spec" data-spec="title"></span></span><span class="t-title">What do you feel like <em>eating?</em></span></div>
+    <div class="type-row"><span class="lab">Lead<span class="spec" data-spec="lead"></span></span><span class="t-lead">We think you're craving something fiery, fresh and crunchy.</span></div>
+    <div class="type-row"><span class="lab">Body<span class="spec" data-spec="body"></span></span><span class="t-body">Swipe a few dishes and we'll work out what you want.</span></div>
+    <div class="type-row"><span class="lab">Label / small<span class="spec" data-spec="label"></span></span><span class="t-label">Korean fried chicken</span></div>
+    <div class="type-row"><span class="lab">Price / meta<span class="spec" data-spec="caption"></span></span><span><span class="t-price">£13.95</span> <span class="t-caption">30 min delivery</span></span></div>
+  </div>
+</template>
+
+<template id="t-material">
+  <div class="panel"><h3>Colour</h3><div class="swatches" data-swatches></div><div data-tints></div></div>
+  <div class="panel"><h3>Texture &amp; material</h3><div class="texture"><span data-texture-note></span></div><p class="t-body" style="font-size:13px;line-height:1.45;margin:10px 0 0" data-material-note></p></div>
+  <div class="panel"><h3>Motion</h3><ul class="motion-list" data-motion></ul></div>
+</template>
+
+<script>
+// Placeholder product name: one constant, deliberately not part of any design system.
+const PRODUCT_NAME = 'working title'
+
+const DIRS = {
+  a: {
+    label: 'A · Order Pad', tagline: 'editorial · print · tactile',
+    palette: [['Paper', '#F3ECDF', 'Background'], ['Ink', '#1D1A16', 'Text, primary CTA, NOPE'], ['Paprika', '#B53A25', 'Accent, YES, heat'], ['Card paper', '#FBF7EF', 'Raised surfaces'], ['Ink muted', '#5E564C', 'Secondary text'], ['Rule', '#CFC3AE', 'Hairlines (decorative)']],
+    specs: { xl: 'Fraunces italic 500 · 46/44', l: 'Fraunces 500 · 38/38', title: 'Fraunces 400 · 32/34', lead: 'Fraunces italic 400 · 17/22', body: 'Instrument Sans 400 · 15/22', label: 'Instrument Sans 600 · 12 · +14% · caps', caption: 'Fraunces 600 tabular · Instrument Sans 500 13' },
+    texture: 'Paper grain · hairlines · dotted leaders',
+    material: 'A warm printed-paper grain (a pre-rendered 128 px tile at 50%), hairline rules instead of boxes, a perforated receipt edge. Soft, low shadows. Corners 3–6 px.',
+    motion: ['Tactile and unhurried; ease-out, minimal overshoot.', 'Drag: ≤ 8° tilt; the stamp lands with a "thunk" (220 ms).', 'Commit: slides off with a slight drop (420 ms).', 'Counter: the old number is struck through.', 'Match: the receipt prints (720 ms); lines follow 60 ms apart.', 'Reduced motion: 150 ms fades only.'],
+  },
+  b: {
+    label: 'B · Night Market', tagline: 'graphic · poster · energetic',
+    palette: [['Night', '#16120F', 'Background'], ['Bone', '#F6EFE6', 'Text, NOPE'], ['Chilli', '#FF5B2E', 'Primary CTA, heat'], ['Lime', '#C6F24E', 'YES, counter, focus'], ['Smoke', '#B3A594', 'Secondary text'], ['Char', '#3A312B', 'Lines (decorative)']],
+    specs: { xl: 'Bricolage 800 · 75% width · 52/45 · caps', l: 'Bricolage 800 · 75% · 56/48 · caps', title: 'Bricolage 800 · 75% · 42/38 · caps', lead: 'Bricolage 600 · 16/22', body: 'Bricolage 400 · opsz 14 · 15/22', label: 'Bricolage 700 · 12 · +10% · caps', caption: 'Bricolage 800 80% tabular · 700 12 caps' },
+    texture: 'Fine grain on warm black · flat colour fields',
+    material: 'A fine pale grain on warm near-black (a pre-rendered tile at 60%). Dish colours become flat fields, darkened 30% for AA. Hard 4 px offset shadows. Corners 2–4 px.',
+    motion: ['Snappy and springy; visible overshoot.', 'Drag: ≤ 12° tilt; the verdict slams in from its side (180 ms).', 'Commit: flung up and out (260 ms).', 'Counter: departure-board roll, in lime.', 'Match: title pop + colour flood + badge (≈ 720 ms).', 'Reduced motion: 150 ms fades only.'],
+  },
+  c: {
+    label: 'C · Café Menu', tagline: 'calm · fresh · the food is the decoration',
+    palette: [['Canvas', '#FCFBF8', 'Background'], ['Ink', '#26302A', 'Text, primary button, icons'], ['Olive', '#55612F', 'YES, selected, focus'], ['Chilli', '#B8502C', 'Spice level only'], ['Ink muted', '#6B6F66', 'Secondary text'], ['Line', '#E7E4DC', 'Dividers (decorative)'], ['Surface', '#FFFFFF', 'Sheets, chips']],
+    specs: { xl: 'System UI 600 · 26/30', l: 'System UI 600 · 26/30', title: 'System UI 600 · 28/34', lead: 'System UI 400 · 16/24', body: 'System UI 400 · 16/24', label: 'System UI 500 · 13/18 · muted', caption: 'System UI 600 18/22 tabular · 500 13/18' },
+    texture: 'No texture: flat canvas, separated by colour and space',
+    material: 'No texture, no gradients. Surfaces separate by colour and space; the only shadow is the soft lift under the top swipe card (and, later, under dish photos). Pills for buttons and chips, 22 px cards, 14 px tiles, 28 px panels.',
+    motion: ['Calm and responsive, never showy.', 'Drag: follows the finger, ≤ 6° tilt; the "✓ Yes" / "✕ Nope" label fades in on the leading side.', 'Commit: slides off in 280 ms (ease-out); the next card settles from 0.96 to 1 in 200 ms.', 'Counter: the number simply updates ("23 left").', 'Match: the photo area fades in and scales 0.97 → 1 over 300 ms, once.', 'Reduced motion: 150 ms opacity fades only.'],
+  },
+}
+
+// ── Colour maths: WCAG contrast and oklab mixing (to reproduce and check color-mix(in oklab, …)) ──
+const toLin = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
+const toSrgb = (c) => (c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055)
+const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
+const lum = (hex) => { const [r, g, b] = rgb(hex).map(toLin); return 0.2126 * r + 0.7152 * g + 0.0722 * b }
+const contrast = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05) }
+function toOklab(hex) {
+  const [r, g, b] = rgb(hex).map(toLin)
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b)
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b)
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b)
+  return [0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s, 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s]
+}
+function fromOklab([L, A, B]) {
+  const l = (L + 0.3963377774 * A + 0.2158037573 * B) ** 3, m = (L - 0.1055613458 * A - 0.0638541728 * B) ** 3, s = (L - 0.0894841775 * A - 1.291485548 * B) ** 3
+  const lin = [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s]
+  return '#' + lin.map((v) => Math.round(Math.min(1, Math.max(0, toSrgb(v))) * 255).toString(16).padStart(2, '0')).join('')
+}
+const mixOklab = (dish, canvas, share) => { const a = toOklab(dish), b = toOklab(canvas); return fromOklab(b.map((v, i) => v + (a[i] - v) * share)) }
+
+/**
+ * C's tint rule: start at an 18% oklab mix; move toward canvas until BOTH ink and muted text pass 4.5:1.
+ * (The brief names --ink; muted text also sits on the card, so it's checked too.)
+ */
+const C = { canvas: '#FCFBF8', ink: '#26302A', muted: '#6B6F66' }
+// 'strict': ink AND muted text must pass 4.5:1 (the brief's accessibility rule).
+// 'ink': only ink is checked (the brief's tint formula as written), so muted text may fail.
+let tintMode = 'strict'
+function safeTint(dish) {
+  let share = 0.18, bg = mixOklab(dish, C.canvas, share)
+  const fails = (x) => contrast(C.ink, x) < 4.5 || (tintMode === 'strict' && contrast(C.muted, x) < 4.5)
+  while (share > 0 && fails(bg)) { share -= 0.01; bg = mixOklab(dish, C.canvas, share) }
+  return { bg, share: Math.max(0, share), ink: contrast(C.ink, bg), muted: contrast(C.muted, bg) }
+}
+const ratio = (r) => `${r.toFixed(1)}:1${r < 4.5 ? ' ✗ fails AA' : ''}`
+let tintPanelHost = null
+const USED_TINTS = [['#9b4a22', 'Seoul Fire Wings'], ['#4f7a34', 'Chicken larb'], ['#c8894a', 'Tonkotsu ramen'], ['#b98a4e', 'Sea bass ceviche'], ['#c9783c', 'Tom yum soup'], ['#e8d9b8', 'Dumplings (light)'], ['#e0b85a', 'Pasta (light)']]
+const FALLBACK_TINTS = [['blush', '#F3E3E2'], ['butter', '#F2EDC8'], ['sage', '#E3E9D8'], ['oat', '#EDE2D0'], ['peach', '#F6DCC8']]
+function renderTintPanel() {
+  if (!tintPanelHost) return
+  const rule = tintMode === 'strict' ? 'strict: ink and muted text both ≥ 4.5:1' : "ink-only: the brief's formula; muted text may fail"
+  tintPanelHost.innerHTML =
+    `<h3 style="margin-top:16px">Dish tints (computed · ${rule})</h3><div class="swatches">` +
+    USED_TINTS.map(([dish, name]) => {
+      const t = safeTint(dish)
+      return `<div class="swatch"><i style="background:${t.bg}"></i><span><b>${name}</b><br>${dish} → ${t.bg} (${Math.round(t.share * 100)}% dish)<br><small>ink ${ratio(t.ink)} · muted ${ratio(t.muted)}</small></span></div>`
+    }).join('') +
+    `</div><h3 style="margin-top:16px">The brief's fallback tints</h3><div class="swatches">` +
+    FALLBACK_TINTS.map(([name, hex]) => `<div class="swatch"><i style="background:${hex}"></i><span><b>${name} ${hex}</b><br><small>ink ${ratio(contrast(C.ink, hex))} · muted ${ratio(contrast(C.muted, hex))}</small></span></div>`).join('') +
+    `</div>`
+}
+function applyTints() {
+  for (const el of document.querySelectorAll('.col.dir-c [style*="--tint"]')) {
+    el.style.setProperty('--tint-bg', safeTint(el.style.getPropertyValue('--tint').trim()).bg)
+  }
+  renderTintPanel()
+}
+
+// Build: every .pair gets the same template rendered into an A, a B and a C column.
+for (const pair of document.querySelectorAll('.pair')) {
+  const tpl = document.getElementById(pair.dataset.template)
+  for (const dir of ['a', 'b', 'c']) {
+    const col = document.createElement('div')
+    col.className = `col dir-${dir}`
+    col.dataset.dir = dir
+    col.innerHTML = `<div class="col-label"><span>${DIRS[dir].label}</span><span>${DIRS[dir].tagline}</span></div>`
+    col.append(tpl.content.cloneNode(true))
+    pair.append(col)
+  }
+}
+for (const el of document.querySelectorAll('[data-name]')) el.textContent = PRODUCT_NAME
+for (const col of document.querySelectorAll('.col')) {
+  const d = DIRS[col.dataset.dir]
+  for (const el of col.querySelectorAll('[data-spec]')) el.textContent = d.specs[el.dataset.spec]
+  const sw = col.querySelector('[data-swatches]')
+  if (!sw) continue
+  const bg = d.palette[0][1]
+  sw.innerHTML = d.palette.map(([name, hex, role]) => {
+    const r = contrast(hex, bg)
+    const note = hex === bg ? 'base' : `${r.toFixed(1)}:1 on bg · ${r >= 4.5 ? 'AA text' : r >= 3 ? 'AA large / UI' : 'decorative only'}`
+    return `<div class="swatch"><i style="background:${hex}"></i><span><b>${name} ${hex}</b><br>${role}<br><small>${note}</small></span></div>`
+  }).join('')
+  if (col.dataset.dir === 'c') tintPanelHost = col.querySelector('[data-tints]')
+  col.querySelector('[data-texture-note]').textContent = d.texture
+  col.querySelector('[data-material-note]').textContent = d.material
+  col.querySelector('[data-motion]').innerHTML = d.motion.map((m) => `<li>${m}</li>`).join('')
+}
+
+applyTints()
+for (const b of document.querySelectorAll('[data-tintmode]')) {
+  b.addEventListener('click', () => {
+    tintMode = b.dataset.tintmode
+    for (const x of document.querySelectorAll('[data-tintmode]')) x.setAttribute('aria-pressed', String(x === b))
+    applyTints()
+  })
+}
+
+// Show / hide directions (at least one stays visible).
+for (const b of document.querySelectorAll('[data-toggle]')) {
+  b.addEventListener('click', () => {
+    const on = b.getAttribute('aria-pressed') === 'true'
+    const visible = [...document.querySelectorAll('[data-toggle][aria-pressed="true"]')].length
+    if (on && visible === 1) return
+    b.setAttribute('aria-pressed', String(!on))
+    document.body.classList.toggle(`hide-${b.dataset.toggle}`, on)
+  })
+}
+
+// Reduced motion: the OS preference or the page toggle.
+const rmBox = document.getElementById('rm')
+const rmQuery = matchMedia('(prefers-reduced-motion: reduce)')
+const applyRm = () => document.body.classList.toggle('rm', rmBox.checked || rmQuery.matches)
+rmBox.addEventListener('change', applyRm)
+rmQuery.addEventListener('change', applyRm)
+applyRm()
+const reduced = () => document.body.classList.contains('rm')
+
+// Craving: toggle moods, at most two (a third replaces the oldest).
+for (const list of document.querySelectorAll('[data-moods]')) {
+  const order = [...list.querySelectorAll('li.on')]
+  for (const li of list.querySelectorAll('li')) {
+    li.addEventListener('click', () => {
+      if (li.classList.contains('on')) { li.classList.remove('on'); order.splice(order.indexOf(li), 1); return }
+      if (order.length === 2) order.shift().classList.remove('on')
+      li.classList.add('on'); order.push(li)
+    })
+  }
+}
+
+// Card drag / fling. Thresholds: 30% of width or a fast fling (800 px/s). Tilt per direction.
+const TILT = { a: 8, b: 12, c: 6 }
+const STAMP_DELAY = { a: 200, b: 120, c: 80 }
+for (const col of document.querySelectorAll('.col')) {
+  const card = col.querySelector('.card.top')
+  if (card) {
+    const dir = col.dataset.dir
+    const behind = col.querySelector('.card.behind')
+    const yes = card.querySelector('.stamp.yes'), no = card.querySelector('.stamp.no')
+    let startX = 0, dx = 0, t0 = 0, dragging = false, busy = false
+    const setDrag = (x) => {
+      dx = x
+      const w = card.offsetWidth
+      card.style.transform = reduced() || x === 0 ? '' : `translateX(${x}px) rotate(${(x / w) * TILT[dir]}deg)`
+      const p = Math.min(1, Math.abs(x) / (w * 0.3))
+      yes.style.opacity = x > 0 ? String(p) : '0'
+      no.style.opacity = x < 0 ? String(p) : '0'
+    }
+    const reset = () => { card.classList.add('reset'); setDrag(0); setTimeout(() => card.classList.remove('reset'), 400) }
+    const commit = (side) => {
+      if (busy) return
+      busy = true
+      const stamp = side === 'right' ? yes : no
+      stamp.style.opacity = ''; stamp.classList.add('thunk')
+      setTimeout(() => {
+        card.style.transform = ''
+        card.classList.add(side === 'right' ? 'fly-right' : 'fly-left')
+        behind.classList.remove('settle'); void behind.offsetWidth; behind.classList.add('settle')
+        setTimeout(() => {
+          card.style.transition = 'none'
+          card.classList.remove('fly-left', 'fly-right'); yes.classList.remove('thunk'); no.classList.remove('thunk')
+          setDrag(0); void card.offsetWidth; card.style.transition = ''; busy = false
+        }, 700)
+      }, reduced() ? 60 : STAMP_DELAY[dir])
+    }
+    card.addEventListener('pointerdown', (e) => { if (busy) return; dragging = true; startX = e.clientX; t0 = performance.now(); card.setPointerCapture(e.pointerId); card.style.transition = 'none' })
+    card.addEventListener('pointermove', (e) => { if (dragging) setDrag(e.clientX - startX) })
+    card.addEventListener('pointerup', () => {
+      if (!dragging) return
+      dragging = false; card.style.transition = ''
+      const velocity = (Math.abs(dx) / Math.max(1, performance.now() - t0)) * 1000
+      if (Math.abs(dx) > card.offsetWidth * 0.3 || velocity > 800) commit(dx > 0 ? 'right' : 'left')
+      else reset()
+    })
+    card.addEventListener('keydown', (e) => { if (e.key === 'ArrowRight') commit('right'); if (e.key === 'ArrowLeft') commit('left') })
+    for (const b of col.querySelectorAll('[data-vote]')) if (!b.closest('.panel')) b.addEventListener('click', () => commit(b.dataset.vote))
+  }
+  const match = col.querySelector('.scr-match')
+  const replay = col.querySelector('[data-reveal]')
+  if (match && replay) replay.addEventListener('click', () => { match.classList.remove('revealing'); void match.offsetWidth; match.classList.add('revealing') })
+}
+</script>
+</body>
+</html>
