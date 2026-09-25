@@ -5,8 +5,9 @@ import { DeckActions } from '../components/deck/DeckActions'
 import { DeckTopBar } from '../components/deck/DeckTopBar'
 import { SwipeDeck } from '../components/deck/SwipeDeck'
 import type { DeckMove, Verdict } from '../components/deck/SwipeDeck'
+import { useImagePrefetch } from '../hooks/useImagePrefetch'
 import { soloSessionStore, useSolo } from '../state/soloSessionStore'
-import { counterModel, currentCard } from '../state/viewModels'
+import { counterModel, currentCard, nextCardImages } from '../state/viewModels'
 
 // S3 Swipe deck (MVP_SPEC §4). Drag, the buttons and the keyboard all go through `commit`, so every
 // input gets the same flight and stamp. Keyboard: ← nope, → yes, Enter on the card "that's the one",
@@ -30,9 +31,10 @@ export function DeckScreen() {
   const refocusCard = useRef(false)
 
   const commit = useCallback(
-    (verdict: Verdict, source: 'drag' | 'button') => {
+    (verdict: Verdict, source: 'drag' | 'button', cardKey?: string) => {
       const before = soloSessionStore.getState().state
       if (!before?.current || before.result) return
+      if (cardKey !== undefined && cardKey !== before.current.offeringId) return // that card is already gone
       const dir = verdict === 'yes' ? 1 : -1
       refocusCard.current = !!deckRef.current?.contains(document.activeElement)
       directions.current.push(dir)
@@ -67,6 +69,11 @@ export function DeckScreen() {
   }, [commit, pick, back])
 
   const cardKey = state?.current && !state.result ? `${state.current.cardIndex}:${state.current.offeringId}` : null
+  // Both possible next cards' photos load in idle time, off-page (the stack edge stays plain).
+  useImagePrefetch(cardKey, () => {
+    const { loaded: l, state: s } = soloSessionStore.getState()
+    return l && s ? nextCardImages(l, s) : []
+  })
   useEffect(() => {
     // Keyboard users keep their place: focus follows onto the new top card.
     if (!refocusCard.current || !cardKey) return

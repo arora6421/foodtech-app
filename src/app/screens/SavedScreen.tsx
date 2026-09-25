@@ -1,10 +1,15 @@
+import type { CSSProperties } from 'react'
 import { useNavigate, useParams } from 'react-router'
 import { copy } from '../copy/en-GB'
 import { DishTile } from '../components/food/DishCard'
+import { DishImage, MenuMark } from '../components/food/DishImage'
 import { Icon } from '../components/primitives/Icon'
 import { useSaved } from '../state/savedStore'
+import { useSolo } from '../state/soloSessionStore'
+import { savedDishArt } from '../state/viewModels'
 
-// S7 Saved (MVP_SPEC §4): a list kept on this device, with a simple detail view.
+// S7 Saved (MVP_SPEC §4): a list kept on this device, and each saved dish as the ticket you kept.
+// Images are resolved afresh from the catalogue, so saves made before photos existed get them too.
 
 const date = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })
 
@@ -12,6 +17,7 @@ export function SavedScreen() {
   const navigate = useNavigate()
   const items = useSaved((s) => s.items)
   const remove = useSaved((s) => s.remove)
+  const loaded = useSolo((s) => s.loaded)
   return (
     <main className="screen">
       <div className="flex min-h-11 items-center">
@@ -30,7 +36,7 @@ export function SavedScreen() {
           {items.map((i) => (
             <li key={i.id}>
               <DishTile
-                model={i}
+                model={{ ...i, ...savedDishArt(loaded, i.archetypeId, i.offeringId, i.archetypeName) }}
                 onClick={() => navigate(`/saved/${encodeURIComponent(i.id)}`)}
                 action={
                   <button
@@ -56,6 +62,8 @@ export function SavedDetailScreen() {
   const { id = '' } = useParams()
   const item = useSaved((s) => s.items.find((i) => i.id === id))
   const remove = useSaved((s) => s.remove)
+  const loaded = useSolo((s) => s.loaded)
+  const art = item ? savedDishArt(loaded, item.archetypeId, item.offeringId, item.archetypeName) : null
   return (
     <main className="screen">
       <div className="flex min-h-11 items-center">
@@ -64,20 +72,37 @@ export function SavedDetailScreen() {
           {copy.saved.back}
         </button>
       </div>
-      {item ? (
+      {item && art ? (
         <>
-          <h1 className="t-display-xl" style={{ margin: '14px 0 8px' }}>
-            {item.archetypeName}
-          </h1>
-          <p className="t-body" style={{ margin: 0 }}>
-            {item.offeringName.toLowerCase() === item.archetypeName.toLowerCase()
-              ? item.venueName
-              : `${item.offeringName} · ${item.venueName}`}
-          </p>
-          <p className="t-price" style={{ margin: '8px 0 4px' }}>
-            {item.priceLabel}
-          </p>
-          <p className="t-caption">{copy.saved.savedOn(date(item.savedAt))}</p>
+          <section className="receipt" aria-labelledby="saved-dish" style={{ marginTop: 14 }}>
+            {art.image && (
+              <DishImage
+                variant="hero"
+                image={art.image}
+                tint={item.tint}
+                art={<MenuMark text={art.initial} />}
+                priority
+              />
+            )}
+            <div className="receipt-plate tinted" style={{ '--tint': item.tint } as CSSProperties}>
+              <p className="t-caption" style={{ margin: 0 }}>
+                {copy.saved.savedOn(date(item.savedAt))}
+              </p>
+              <h1 id="saved-dish" className="t-display-xl" style={{ margin: '14px 0 0' }}>
+                {item.archetypeName}
+              </h1>
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="t-body dot-list">
+                {item.offeringName.toLowerCase() !== item.archetypeName.toLowerCase() && (
+                  <span>{item.offeringName}</span>
+                )}
+                <span>{item.venueName}</span>
+              </span>
+              <span className="leader" />
+              <span className="t-price">{item.priceLabel}</span>
+            </div>
+          </section>
           <button
             type="button"
             className="btn btn-secondary"

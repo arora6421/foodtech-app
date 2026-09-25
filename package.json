@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "dev:lan": "vite --host",
+    "preview:lan": "vite build --mode review && vite preview --host --strictPort",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
     "lint": "eslint .",

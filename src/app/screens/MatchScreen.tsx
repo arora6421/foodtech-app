@@ -5,6 +5,7 @@ import { Navigate, useNavigate } from 'react-router'
 import { copy } from '../copy/en-GB'
 import { MOTION } from '../design/motion'
 import { DishTile } from '../components/food/DishCard'
+import { DishImage, MenuMark } from '../components/food/DishImage'
 import { DirectionsSheet, OrderSheet } from '../components/handoff/HandoffSheets'
 import { Icon } from '../components/primitives/Icon'
 import { track } from '../services/analytics'
@@ -64,6 +65,9 @@ function MatchTicket({ model, entrance, onLanded }: { model: MatchModel; entranc
   const hero = model.hero
   return (
     <motion.section className="receipt" aria-labelledby="match-dish" {...reveal.ticket} onAnimationComplete={onLanded}>
+      {hero.image && (
+        <DishImage variant="hero" image={hero.image} tint={hero.tint} art={<MenuMark text={hero.initial} />} priority />
+      )}
       <div className="receipt-plate tinted" style={{ '--tint': hero.tint } as CSSProperties}>
         <div className="flex items-center justify-between gap-2">
           <span className="t-label">{hero.cuisineLabel}</span>
@@ -226,8 +230,17 @@ export function MatchScreen() {
                     className="alt-tile"
                     onClick={() => (isEngineHero ? returnToMatch() : viewAlternative(alt.archetypeId))}
                   >
-                    <small>{isEngineHero ? copy.match.ourMatch : copy.match.orTry}</small>
-                    {alt.archetypeName}
+                    <DishImage
+                      variant="mini"
+                      image={alt.image}
+                      tint={alt.tint}
+                      art={<MenuMark text={alt.initial} />}
+                      decorative
+                    />
+                    <span>
+                      <small>{isEngineHero ? copy.match.ourMatch : copy.match.orTry}</small>
+                      {alt.archetypeName}
+                    </span>
                   </button>
                 )
               })}

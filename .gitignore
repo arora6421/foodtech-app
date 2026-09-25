@@ -4,3 +4,8 @@ coverage
 sim-output
 *.local
 .DS_Store
+
+# Local image review (M1.6): test images are never committed until a source is approved
+src/app/debug/review-images/
+# Worktree used to build older commits for comparison
+.compare/

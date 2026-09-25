@@ -13,6 +13,10 @@ export const MOTION = {
     stampFullPx: 64,
     /** Spring back to centre when a drag doesn't commit. */
     springBack: { type: 'spring', stiffness: 520, damping: 34 } as const,
+    /** A committed drag keeps the finger's speed: a spring seeded with the release velocity,
+     *  so there is no seam between dragging and flying. Rest thresholds are loose because the
+     *  card is off-screen by then. */
+    fling: { type: 'spring', stiffness: 170, damping: 26, restDelta: 4, restSpeed: 60 } as const,
   },
   stampDelayMs: 200,
   flyMs: 420,

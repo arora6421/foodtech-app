@@ -294,11 +294,147 @@
     filter: brightness(0.97);
     pointer-events: none;
   }
+  /* Dish imagery (M1.6). The frame's size comes from its variant, never from the photo, so nothing
+     shifts on load. The no-photo art is always underneath: a deeper wash of the dish's colour,
+     paper grain, and the dish's initial set like a menu drop cap. The photo fades in over it. */
+  .dish-media {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    background: color-mix(in oklab, var(--tint) 38%, var(--color-raised));
+  }
+  .dish-media::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image: var(--texture-paper);
+    background-size: 128px;
+    opacity: 0.6;
+  }
+  .dish-media-art {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  .dish-media img {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0;
+    transition: opacity 260ms ease-out;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+  .dish-media[data-state='loaded'] img {
+    opacity: 1;
+  }
+  /* Cutouts: the whole plate, centred on the tint, scaled to fit with a margin, never cropped.
+     The shadow follows the plate's outline (drop-shadow reads the alpha channel). */
+  .dish-media[data-kind='cutout'] img {
+    object-fit: contain;
+    padding: 7%;
+    filter: drop-shadow(0 6px 9px rgb(29 26 22 / 0.24)) drop-shadow(0 1px 2px rgb(29 26 22 / 0.18));
+  }
+  .dish-media-thumb[data-kind='cutout'] img,
+  .dish-media-mini[data-kind='cutout'] img {
+    padding: 5%;
+    filter: drop-shadow(0 2px 3px rgb(29 26 22 / 0.24));
+  }
+  /* The art sits under transparent pixels, so it fades out once the image has arrived. */
+  .dish-media-art {
+    transition: opacity 260ms ease-out;
+  }
+  .dish-media[data-state='loaded'] .dish-media-art {
+    opacity: 0;
+  }
+  .dish-media-note {
+    position: absolute;
+    left: 8px;
+    bottom: 8px;
+    z-index: 2;
+    padding: 4px 6px;
+    border-radius: 2px;
+    background: color-mix(in oklab, var(--color-canvas) 90%, transparent);
+    color: var(--color-ink);
+    font: 600 10px/1 var(--font-text);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .menu-mark {
+    position: absolute;
+    right: 0.04em;
+    bottom: -0.3em;
+    font: italic 300 1em/1 var(--font-display);
+    font-variation-settings:
+      'SOFT' 100,
+      'WONK' 1,
+      'opsz' 144;
+    color: color-mix(in oklab, var(--tint) 55%, var(--color-ink));
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  /* The card frame: the largest box of the chosen shape that fits the slot between the title and
+     the details. Every text row is fixed-height, so the slot, and therefore the frame, is the same
+     on every card; on a short phone the frame shrinks instead of the page scrolling. The shape is
+     --frame-w / --frame-h (16:10 by default; ?frame=4:3 in review builds). */
+  .dish-media-card {
+    width: min(100cqw, calc(100cqh * var(--frame-w) / var(--frame-h)));
+    aspect-ratio: var(--frame-w) / var(--frame-h);
+    border-radius: 4px;
+    font-size: min(150px, 62cqh);
+  }
+  /* Crops are centred on the dish (the brief keeps it centred); a per-image focal point can be
+     supplied later through --focus without touching layout. */
+  .dish-media img {
+    object-position: var(--focus, 50% 50%);
+  }
+  .dish-media-hero {
+    aspect-ratio: 16 / 10;
+    margin: -16px -18px 0;
+    border-radius: 2px 2px 0 0;
+    font-size: 190px;
+  }
+  .dish-media-thumb {
+    flex: none;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-control);
+    font-size: 44px;
+  }
+  .dish-media-mini {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 2px;
+    font-size: 32px;
+  }
+  .dish-media-thumb .menu-mark,
+  .dish-media-mini .menu-mark {
+    right: 50%;
+    bottom: 50%;
+    transform: translate(50%, 54%);
+    opacity: 0.8;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dish-media img,
+    .dish-media-art {
+      transition: none;
+    }
+  }
+
   /* Swipe stack: the top card is dragged horizontally; vertical pans still scroll the page. */
   .deck-stack {
     position: relative;
     flex: 1;
-    min-height: 420px;
+    /* The text rows take ~308px and the frame gets the rest. Low enough that an iPhone SE-sized
+       screen (~550px visible) fits without scrolling; the frame is what shrinks. */
+    min-height: 360px;
     margin: 8px 0 14px;
   }
   .swipe-card {
@@ -307,6 +443,12 @@
     touch-action: pan-y;
     cursor: grab;
     transform-origin: 50% 115%;
+    /* Its own compositor layer, and no text selection, callout or tap flash mid-gesture. */
+    will-change: transform;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
   }
   .swipe-card:active {
     cursor: grabbing;
@@ -317,23 +459,114 @@
       inset 0 0 0 1px var(--color-rule),
       var(--shadow-card);
   }
-  .dish-card .big-num {
-    position: absolute;
-    top: 30px;
-    right: 14px;
-    font: italic 300 200px/1 var(--font-display);
+  /* Fixed-height rows, so every card has the same layout whatever the dish's text. */
+  .card-head {
+    flex: none;
+    display: flex;
+    justify-content: space-between;
+    height: 15px;
+    margin-bottom: 10px;
+  }
+  .card-title {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* one-line names sit on the dish type, next to the frame */
+    /* 2 name lines (2 × 28 × 1.24) + 1 dish-type line (17 × 1.24), rounded up. Checked by
+       src/app/design/cardTitle.test.ts against the font files. */
+    height: 92px;
+    margin-bottom: 12px;
+  }
+  /* Line heights are ≥ Fraunces' content area (ascent + descent = 1.233em). The clamp below hides
+     overflow, so a tighter leading would cut the descenders off the last line (the g in "goong"). */
+  .card-name {
+    margin: 0;
+    font: 500 28px/1.24 var(--font-display);
     font-variation-settings:
-      'SOFT' 100,
-      'WONK' 1,
+      'SOFT' 30,
       'opsz' 144;
-    color: color-mix(in oklab, var(--tint) 38%, transparent);
-    pointer-events: none;
+    letter-spacing: -0.015em;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
   }
   .dish-card .arch {
-    font: italic 400 19px/1.2 var(--font-display);
+    margin: 0;
+    font: italic 400 17px/1.24 var(--font-display);
     font-variation-settings: 'WONK' 1;
     color: var(--color-ink-muted);
-    margin: 0 0 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card-frame-slot {
+    flex: 1 1 0;
+    min-height: 0;
+    container-type: size;
+    display: grid;
+    place-items: center;
+  }
+  .card-details {
+    flex: none;
+    margin-top: 12px;
+  }
+  .card-row {
+    height: 15px;
+    margin: 0 0 10px;
+    white-space: nowrap;
+    overflow: hidden;
+  }
+  .card-venue {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    height: 17px;
+    margin-top: 4px;
+  }
+  .card-meta p {
+    margin: 0;
+    white-space: nowrap;
+  }
+  /* A 44px touch target that doesn't add height: the negative margins cancel the extra. */
+  .card-allergen-toggle {
+    flex: none;
+    min-height: 44px;
+    margin: -14px 0;
+    padding: 0 0 0 8px;
+    border: 0;
+    background: none;
+    color: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  /* On the card the note is one compact line so it never covers much of a small frame. */
+  .dish-media-card .dish-media-note {
+    left: 6px;
+    bottom: 6px;
+    padding: 3px 5px;
+    font-size: 9px;
+    white-space: nowrap;
+  }
+  /* Listed allergens open over the lower part of the frame, so the card never changes height. */
+  .allergen-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    margin: 0;
+    padding: 10px 12px;
+    border-radius: 0 0 4px 4px;
+    background: color-mix(in oklab, var(--color-raised) 94%, transparent);
+    color: var(--color-ink);
+    box-shadow: 0 -1px 0 var(--color-rule);
   }
   .dish-card .foot {
     border-top: 1px dashed color-mix(in oklab, var(--color-ink) 35%, transparent);
@@ -366,7 +599,7 @@
   /* ── YES / NOPE ────────────────────────────────────────────── */
   .stamp {
     position: absolute;
-    top: 52px;
+    top: 40%; /* over the frame, clear of the dish name */
     z-index: 3;
     padding: 12px 18px;
     border: 3px double currentColor;
@@ -467,6 +700,10 @@
     border-radius: 2px 2px 0 0;
     border-bottom: 1px dashed color-mix(in oklab, var(--color-ink) 35%, transparent);
   }
+  .dish-media-hero + .receipt-plate {
+    margin-top: 0;
+    border-radius: 0;
+  }
   .badge {
     display: inline-block;
     padding: 5px 8px;
@@ -501,7 +738,7 @@
     color: var(--color-ink-muted);
   }
   .alt-tile {
-    display: block;
+    display: flex;
     width: 100%;
     min-height: 44px;
     padding: 8px 10px;
@@ -513,6 +750,10 @@
     text-align: left;
     cursor: pointer;
     font: italic 400 16px/1.1 var(--font-display);
+  }
+  .alt-tile {
+    align-items: center;
+    gap: 10px;
   }
   .alt-tile small {
     display: block;

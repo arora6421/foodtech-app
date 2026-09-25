@@ -36,8 +36,9 @@ export function CravingScreen() {
   // Recompute when any setting changes (eligibleCount reads the settings store).
   const count = useMemo(
     () => (status === 'ready' ? eligibleCount(craving) : null),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [status, eligibleCount, craving, diet, budget, fulfilment],
-  ) // eslint-disable-line react-hooks/exhaustive-deps
+  )
 
   const toggleMood = (m: Mood) => {
     if (intent === 'no_idea') setIntent('normal')

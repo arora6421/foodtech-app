@@ -61,4 +61,7 @@
   /* how strongly a dish's own colour tints its card (A: a light tint on paper keeps ink text AA by construction) */
   --tint-strength: 20%;
   --texture-paper: url('./textures/grain-paper.png');
+  /* deck-card photo frame shape (16:10, the Match hero's crop); review builds can try 4:3 */
+  --frame-w: 16;
+  --frame-h: 10;
 }

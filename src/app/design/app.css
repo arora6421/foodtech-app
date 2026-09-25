@@ -7,6 +7,18 @@ html {
   color: var(--color-ink);
   -webkit-text-size-adjust: 100%;
 }
+/* A card flung past the screen edge must not widen the page: on phones that makes the viewport
+   shift mid-drag, which reads as a stutter. `clip` (not `hidden`) creates no scroll container. */
+html,
+body {
+  overflow-x: hidden;
+}
+@supports (overflow: clip) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+}
 body {
   margin: 0;
   font-family: var(--font-text);

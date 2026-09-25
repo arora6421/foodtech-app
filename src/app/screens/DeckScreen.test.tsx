@@ -5,7 +5,9 @@ import { MotionGlobalConfig } from 'motion/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { dragVerdict } from '../components/deck/SwipeDeck'
+import { DishCard } from '../components/food/DishCard'
 import { soloSessionStore } from '../state/soloSessionStore'
+import { currentCard } from '../state/viewModels'
 import { DeckScreen } from './DeckScreen'
 
 // Motion's timing is covered by the browser pass; here every animation completes at once so the
@@ -102,6 +104,43 @@ describe('DeckScreen', () => {
     renderDeck()
     await user.click(screen.getByRole('button', { name: 'Yes' }))
     await waitFor(() => expect(document.querySelector('[aria-live="polite"]')!.textContent).toMatch(/^Card 2\. /))
+  })
+
+  it('gives every card the same layout: the frame is always there, with no-photo art when there is no photo', async () => {
+    const user = userEvent.setup()
+    renderDeck()
+    const structure = () =>
+      [...topCard().children].map((c) => c.className).filter((c) => c && !c.includes('stamp') && c !== 'sr-only')
+    const first = structure()
+    expect(first).toEqual(['card-head', 'card-title', 'card-frame-slot', 'card-details'])
+    const frame = topCard().querySelector<HTMLElement>('.dish-media-card')!
+    expect(frame.dataset.state).toBe('none')
+    expect(frame.querySelector('.menu-mark')!.textContent).toBe('1')
+    for (let i = 0; i < 4; i++) {
+      await user.click(screen.getByRole('button', { name: 'Nope' }))
+      await waitFor(() => expect(structure()).toEqual(first))
+    }
+  })
+
+  it('opens listed allergens inside the frame slot, so the card keeps its height', async () => {
+    const user = userEvent.setup()
+    const model = {
+      ...currentCard(
+        soloSessionStore.getState().loaded!,
+        soloSessionStore.getState().state!,
+        soloSessionStore.getState().state!.current!,
+      ),
+      allergens: ['sesame', 'milk'],
+    }
+    render(<DishCard model={model} />)
+    const card = document.querySelector<HTMLElement>('.dish-card')!
+    const rows = card.children.length
+    await user.click(screen.getByRole('button', { name: 'Listed allergens' }))
+    const panel = card.querySelector('.allergen-panel')!
+    expect(panel.textContent).toBe('sesame, milk')
+    expect(panel.parentElement!.className).toBe('card-frame-slot')
+    expect(card.children.length).toBe(rows)
+    expect(screen.getByRole('button', { name: 'Listed allergens' }).getAttribute('aria-controls')).toBe(panel.id)
   })
 
   it('shows verdicts in words, not colour alone', () => {

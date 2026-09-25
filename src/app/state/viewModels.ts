@@ -4,7 +4,9 @@ import { effectiveAxes } from '../../engine/features/featurize'
 import type { Explanation } from '../../engine/explain/explain'
 import type { CardChoice, ConfidenceLabel, SoloState, StopReason } from '../../engine/session/types'
 import type { LoadedCatalogue } from '../services/catalogueService'
-import { explanationFor } from '../services/engineAdapter'
+import { explanationFor, nextCards } from '../services/engineAdapter'
+import { imageSource, resolveDishImage } from '../services/imageResolver'
+import type { ResolvedImage } from '../services/imageResolver'
 
 // View models: the only shapes presentational components receive (m1-spec §2.3). All display
 // formatting (prices, distances, times, labels) happens here and nowhere else.
@@ -27,6 +29,10 @@ export interface DishCardModel {
   spiceWord: string
   tags: string[]
   tint: string
+  /** The dish's photo, or null for the designed no-photo state. */
+  image: ResolvedImage | null
+  /** Drawn on the no-photo thumbnail: the dish's initial, menu style. */
+  initial: string
   allergens: string[]
   a11yLabel: string
 }
@@ -99,6 +105,31 @@ export function tagsFor(a: DishArchetype): string[] {
   return [...a.textures.map((t) => TEXTURE_WORD[t]), ...a.flavours.map((f) => FLAVOUR_WORD[f])].slice(0, 3)
 }
 
+const initialOf = (name: string) => [...name.trim()][0]?.toUpperCase() ?? ''
+
+/** Image and initial for a saved dish, resolved afresh so a new image source applies to old saves too. */
+export function savedDishArt(
+  loaded: LoadedCatalogue | null,
+  archetypeId: string,
+  offeringId: string,
+  name: string,
+): { image: ResolvedImage | null; initial: string } {
+  const a = loaded?.archetypes.get(archetypeId)
+  const o = loaded?.offerings.get(offeringId)
+  const v = o ? loaded?.venues.get(o.venueId) : undefined
+  return { image: a && o && v ? resolveDishImage(imageSource(), a, o, v) : null, initial: initialOf(name) }
+}
+
+/** Image URLs for whichever card comes next (after YES or after NOPE), once the adapter has pre-computed them. */
+export function nextCardImages(loaded: LoadedCatalogue, state: SoloState): string[] {
+  if (!imageSource().enabled) return []
+  const { yes, no } = nextCards(state)
+  return [yes, no]
+    .filter((c): c is CardChoice => c !== null)
+    .map((c) => dishCard(loaded, state, c.archetypeId, c.offeringId, null).image?.src)
+    .filter((src): src is string => !!src)
+}
+
 export function dishCard(
   loaded: LoadedCatalogue,
   state: SoloState,
@@ -133,6 +164,8 @@ export function dishCard(
     spiceWord: SPICE_WORD[spice],
     tags: tagsFor(a),
     tint: a.image.dominantColour,
+    image: resolveDishImage(imageSource(), a, o, v),
+    initial: initialOf(a.name),
     allergens,
     a11yLabel: `${o.name}. ${showArchetype ? `${a.name}, ` : ''}${CUISINE_LABEL(a.cuisine)}. ${v.name}, ${price}, ${time}, ${dist}. Spice ${spice} of 4, ${SPICE_WORD[spice].toLowerCase()}.`,
   }

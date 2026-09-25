@@ -34,7 +34,7 @@ const purity = {
 }
 
 export default tseslint.config(
-  { ignores: ['dist', 'node_modules', 'coverage', 'sim-output'] },
+  { ignores: ['dist', 'node_modules', 'coverage', 'sim-output', '.compare'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

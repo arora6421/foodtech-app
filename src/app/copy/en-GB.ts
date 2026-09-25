@@ -93,6 +93,9 @@ export const copy = {
     altChoose: 'Choose this instead',
     altReturn: 'Return to our match',
   },
+  imagery: {
+    illustrative: 'Illustrative image',
+  },
   handoff: {
     orderTitle: (venue: string) => `Order from ${venue}`,
     orderBody: 'Choose a delivery app.',

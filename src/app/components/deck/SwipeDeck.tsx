@@ -64,14 +64,14 @@ const variants = {
           transition: { duration: sec(MOTION.reducedFadeMs * 2), times: [0, 0.5, 1], zIndex: { duration: 0 } },
         }
       const fly = move.dir * flyDistance()
+      // A drag is already flying (see onDragEnd); the same spring target keeps its velocity.
+      if (move.source === 'drag') return { x: fly, zIndex: 3, transition: { x: S.fling, zIndex: { duration: 0 } } }
       // A button or key press nudges the card first so its stamp lands before it flies.
-      const x = move.source === 'button' ? [null, move.dir * S.stampFullPx, fly] : fly
-      const duration = sec(MOTION.flyMs + (move.source === 'button' ? MOTION.stampDelayMs : 0))
       return {
-        x,
+        x: [null, move.dir * S.stampFullPx, fly],
         zIndex: 3,
         transition: {
-          x: { duration, ease: MOTION.flyEase, times: move.source === 'button' ? [0, 0.32, 1] : undefined },
+          x: { duration: sec(MOTION.flyMs + MOTION.stampDelayMs), ease: MOTION.flyEase, times: [0, 0.32, 1] },
           zIndex: { duration: 0 },
         },
       }
@@ -99,7 +99,8 @@ export function dragVerdict(offset: number, velocity: number, width: number): Ve
 interface SwipeDeckProps {
   card: DishCardModel | null
   move: DeckMove
-  onVerdict: (verdict: Verdict, source: 'drag') => void
+  /** `cardKey` lets the deck ignore a late drag commit if another input already moved past that card. */
+  onVerdict: (verdict: Verdict, source: 'drag', cardKey: string) => void
   onExitComplete?: () => void
 }
 
@@ -130,7 +131,8 @@ function SwipeCard({
   const leaving = usePresenceData() as MoveContext | undefined
   const x = useMotionValue(0)
   const tilt = ctx.reduced ? 0 : S.maxTiltDeg
-  const rotate = useTransform(x, [-300, 0, 300], [-tilt, 0, tilt])
+  // Unclamped, so the tilt keeps easing on as the card leaves instead of locking at full drag.
+  const rotate = useTransform(x, [-300, 0, 300], [-tilt, 0, tilt], { clamp: false })
   const yesInk = useTransform(x, [S.stampStartPx, S.stampFullPx], [0, 1])
   const noInk = useTransform(x, [-S.stampFullPx, -S.stampStartPx], [1, 0])
 
@@ -139,8 +141,11 @@ function SwipeCard({
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
     const verdict = dragVerdict(info.offset.x, info.velocity.x, ref.current?.offsetWidth || 320)
-    if (verdict) onVerdict(verdict, 'drag')
-    else void animate(x, 0, S.springBack)
+    if (!verdict) return void animate(x, 0, S.springBack)
+    // Fly now, from the finger's own velocity, and hand the verdict to the engine only after that
+    // first frame has painted, so its work (and React's) never lands on the frame the card lets go.
+    void animate(x, (verdict === 'yes' ? 1 : -1) * flyDistance(), { ...S.fling, velocity: info.velocity.x })
+    requestAnimationFrame(() => setTimeout(() => onVerdict(verdict, 'drag', model.key), 0))
   }
 
   return (
