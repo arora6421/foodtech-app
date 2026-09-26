@@ -16,19 +16,26 @@ afterEach(cleanup)
 const here = resolve(process.cwd(), 'src/app/design')
 const css = readFileSync(resolve(here, 'components.css'), 'utf8')
 
+/** The base rule whose whole selector is exactly `selector` (not a longer one that ends with it, like
+ *  the narrow-screen `.dish-card .card-title` override). */
 function block(selector: string): string {
-  const start = css.indexOf(`${selector} {`)
-  expect(start, `${selector} rule`).toBeGreaterThan(-1)
-  return css.slice(start, css.indexOf('}', start))
+  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const m = new RegExp(`\\n\\s*${escaped} \\{`).exec(css)
+  expect(m, `${selector} rule`).not.toBeNull()
+  return css.slice(m!.index, css.indexOf('}', m!.index))
 }
+// The title area sets the name size in px; the name and dish type are sized in em of it.
+const titleSize = () => Number(/font-size:\s*([\d.]+)px/.exec(block('.card-title'))![1])
 function fontOf(selector: string) {
-  const m = /font:\s*(?:italic\s+)?\d+\s+([\d.]+)px\/([\d.]+)/.exec(block(selector))!
-  return { size: Number(m[1]), lineHeight: Number(m[2]) }
+  const m = /font:\s*(?:italic\s+)?\d+\s+([\d.]+)(px|em)\/([\d.]+)/.exec(block(selector))!
+  const size = m[2] === 'em' ? Number(m[1]) * titleSize() : Number(m[1])
+  return { size, lineHeight: Number(m[3]) }
 }
 
 /** Ascent + descent in em, from the metrics browsers use to size a line (typo when USE_TYPO_METRICS, else hhea). */
 function contentArea(file: string) {
-  const d = readFileSync(resolve(here, 'fonts', file))
+  // The full sources: subsetting to WOFF2 (scripts/subset-fonts.py) keeps vertical metrics unchanged.
+  const d = readFileSync(resolve(process.cwd(), 'docs/design/fonts', file))
   const tables = new Map<string, number>()
   for (let i = 0; i < d.readUInt16BE(4); i++)
     tables.set(d.toString('latin1', 12 + 16 * i, 16 + 16 * i), d.readUInt32BE(20 + 16 * i))
@@ -65,7 +72,7 @@ describe('deck card title', () => {
   it('the fixed title area holds two name lines and the dish type line, so the card height never changes', () => {
     const name = fontOf('.card-name')
     const arch = fontOf('.dish-card .arch')
-    const height = Number(/height:\s*([\d.]+)px/.exec(block('.card-title'))![1])
+    const height = Number(/height:\s*([\d.]+)em/.exec(block('.card-title'))![1]) * titleSize()
     expect(height).toBeGreaterThanOrEqual(2 * name.size * name.lineHeight + arch.size * arch.lineHeight)
   })
 

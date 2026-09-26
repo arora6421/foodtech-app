@@ -50,3 +50,10 @@ export const cropsImageSource = folderSource(
     import: 'default',
   }),
 )
+
+export const IMAGE_SOURCES = {
+  demo: demoImageSource,
+  broken: brokenImageSource,
+  review: reviewImageSource,
+  crops: cropsImageSource,
+}

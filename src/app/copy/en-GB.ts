@@ -92,6 +92,14 @@ export const copy = {
     altWhy: 'Why it could suit you',
     altChoose: 'Choose this instead',
     altReturn: 'Return to our match',
+    // Pick-list sessions only (none of our picks landed, so there is no "our match" to return to).
+    pickListReturn: 'Back to the list',
+    pickListTop: 'Top of the list',
+  },
+  error: {
+    title: 'Something went wrong',
+    body: 'Sorry, that screen didn’t load. Starting again usually fixes it.',
+    restart: 'Start again',
   },
   imagery: {
     illustrative: 'Illustrative image',

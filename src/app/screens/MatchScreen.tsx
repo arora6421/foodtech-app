@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
-import { motion, useReducedMotion } from 'motion/react'
+import { m, useReducedMotion } from 'motion/react'
 import { Navigate, useNavigate } from 'react-router'
 import { copy } from '../copy/en-GB'
 import { MOTION } from '../design/motion'
@@ -64,22 +64,22 @@ function MatchTicket({ model, entrance, onLanded }: { model: MatchModel; entranc
   const [reveal] = useState(() => revealFor(entrance))
   const hero = model.hero
   return (
-    <motion.section className="receipt" aria-labelledby="match-dish" {...reveal.ticket} onAnimationComplete={onLanded}>
+    <m.section className="receipt" aria-labelledby="match-dish" {...reveal.ticket} onAnimationComplete={onLanded}>
       {hero.image && (
         <DishImage variant="hero" image={hero.image} tint={hero.tint} art={<MenuMark text={hero.initial} />} priority />
       )}
       <div className="receipt-plate tinted" style={{ '--tint': hero.tint } as CSSProperties}>
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="t-label">{hero.cuisineLabel}</span>
-          <motion.span className="badge" {...reveal.stamp}>
+          <m.span className="badge" {...reveal.stamp}>
             {model.mode === 'match' ? model.confidenceLabel : copy.match.altLabel}
-          </motion.span>
+          </m.span>
         </div>
         <h2 id="match-dish" className="t-display-xl" style={{ margin: '14px 0 0' }}>
           {hero.archetypeName}
         </h2>
       </div>
-      <div className="flex items-baseline gap-2">
+      <div className="price-line flex items-baseline gap-2">
         <span className="t-body dot-list">
           {hero.showArchetype && <span>{hero.offeringName}</span>}
           <span>{hero.venueName}</span>
@@ -92,9 +92,9 @@ function MatchTicket({ model, entrance, onLanded }: { model: MatchModel; entranc
         <span>{hero.distanceLabel}</span>
       </p>
       {model.headline && (
-        <motion.p className="t-lead" style={{ margin: '10px 0 4px' }} {...reveal.line(0)}>
+        <m.p className="t-lead" style={{ margin: '10px 0 4px' }} {...reveal.line(0)}>
           {model.headline}
-        </motion.p>
+        </m.p>
       )}
       {model.reasons.length > 0 && (
         <>
@@ -103,14 +103,14 @@ function MatchTicket({ model, entrance, onLanded }: { model: MatchModel; entranc
           </h3>
           <ul className="reasons">
             {model.reasons.map((r, i) => (
-              <motion.li key={r.text} data-kind={r.kind} {...reveal.line(i + 1)}>
+              <m.li key={r.text} data-kind={r.kind} {...reveal.line(i + 1)}>
                 {r.text}
-              </motion.li>
+              </m.li>
             ))}
           </ul>
         </>
       )}
-    </motion.section>
+    </m.section>
   )
 }
 
@@ -154,6 +154,10 @@ export function MatchScreen() {
   const savedEntry = items.find((i) => i.archetypeId === hero.archetypeId && i.offeringId === hero.offeringId)
   const inspecting = model.mode === 'alternative'
   const showPickList = model.pickList && model.mode === 'match'
+  // In a pick-list session "our match" is the list itself, so the return action and the top dish's
+  // tile say so; the approved runner-up copy applies everywhere else.
+  const pickListSession = state.result.stopReason === 'pick_list'
+  const returnLabel = pickListSession ? copy.match.pickListReturn : copy.match.altReturn
 
   const toggleSave = () => {
     if (savedEntry) return removeItem(savedEntry.id)
@@ -220,7 +224,7 @@ export function MatchScreen() {
           )}
 
           {model.alternatives.length > 0 && (
-            <div className="grid grid-cols-2 gap-2" style={{ marginTop: 10 }}>
+            <div className="alt-tiles" style={{ marginTop: 10 }}>
               {model.alternatives.map((alt) => {
                 const isEngineHero = alt.archetypeId === state.result!.hero.archetypeId
                 return (
@@ -228,7 +232,11 @@ export function MatchScreen() {
                     key={alt.key}
                     type="button"
                     className="alt-tile"
-                    onClick={() => (isEngineHero ? returnToMatch() : viewAlternative(alt.archetypeId))}
+                    onClick={() =>
+                      isEngineHero && !pickListSession
+                        ? returnToMatch()
+                        : viewAlternative(alt.archetypeId, isEngineHero)
+                    }
                   >
                     <DishImage
                       variant="mini"
@@ -238,7 +246,13 @@ export function MatchScreen() {
                       decorative
                     />
                     <span>
-                      <small>{isEngineHero ? copy.match.ourMatch : copy.match.orTry}</small>
+                      <small>
+                        {isEngineHero
+                          ? pickListSession
+                            ? copy.match.pickListTop
+                            : copy.match.ourMatch
+                          : copy.match.orTry}
+                      </small>
                       {alt.archetypeName}
                     </span>
                   </button>
@@ -249,19 +263,19 @@ export function MatchScreen() {
         </>
       )}
 
-      <motion.div style={{ marginTop: 'auto', paddingTop: 14 }} {...actionsReveal}>
+      <m.div style={{ marginTop: 'auto', paddingTop: 14 }} {...actionsReveal}>
         {inspecting ? (
           <div className="flex flex-col gap-2.5">
             <button type="button" className="btn btn-primary" onClick={chooseAlternative}>
               {copy.match.altChoose}
             </button>
             <button type="button" className="btn btn-secondary" onClick={returnToMatch}>
-              {copy.match.altReturn}
+              {returnLabel}
             </button>
           </div>
         ) : (
           !showPickList && (
-            <div className="grid gap-2" style={{ gridTemplateColumns: '1fr 1fr 48px' }}>
+            <div className="match-actions">
               <button type="button" className="btn btn-primary" onClick={() => openSheet(primary)}>
                 {primary === 'order' ? copy.match.order : copy.match.directions}
               </button>
@@ -289,7 +303,7 @@ export function MatchScreen() {
           )}
           {model.mode === 'chosen-alternative' && (
             <button type="button" className="btn btn-tertiary" onClick={returnToMatch}>
-              {copy.match.altReturn}
+              {returnLabel}
             </button>
           )}
           <button
@@ -304,7 +318,7 @@ export function MatchScreen() {
             {copy.match.startAgain}
           </button>
         </div>
-      </motion.div>
+      </m.div>
 
       <OrderSheet
         open={sheet === 'order'}

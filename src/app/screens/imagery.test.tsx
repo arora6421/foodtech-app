@@ -9,6 +9,7 @@ import { manifestSource, NO_IMAGES, setImageSource } from '../services/imageReso
 import { soloSessionStore } from '../state/soloSessionStore'
 import { DeckScreen } from './DeckScreen'
 import { MatchScreen } from './MatchScreen'
+import { withMotion } from '../testing/withMotion'
 
 // Imagery must never stand between the user and a decision: jsdom never loads images, which is
 // exactly the "very slow network" case, and firing `error` covers the failed case.
@@ -50,12 +51,14 @@ afterEach(cleanup)
 
 const renderAt = (path: string) =>
   render(
-    <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        <Route path="/deck" element={<DeckScreen />} />
-        <Route path="/match" element={<MatchScreen />} />
-      </Routes>
-    </MemoryRouter>,
+    withMotion(
+      <MemoryRouter initialEntries={[path]}>
+        <Routes>
+          <Route path="/deck" element={<DeckScreen />} />
+          <Route path="/match" element={<MatchScreen />} />
+        </Routes>
+      </MemoryRouter>,
+    ),
   )
 const topCard = () => document.querySelector<HTMLElement>('.swipe-card:not([inert]) .dish-card')!
 

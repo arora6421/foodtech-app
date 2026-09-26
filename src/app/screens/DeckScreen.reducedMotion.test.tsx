@@ -5,6 +5,7 @@ import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 import { soloSessionStore } from '../state/soloSessionStore'
 import { DeckScreen } from './DeckScreen'
+import { withMotion } from '../testing/withMotion'
 
 // Its own file: Motion reads prefers-reduced-motion once per module instance.
 // Animations run for real here (no skipAnimations) so the outgoing card can be inspected.
@@ -39,11 +40,13 @@ describe('DeckScreen with reduced motion', () => {
   it('never tilts or moves the card, and still stamps the verdict in words', async () => {
     const user = userEvent.setup()
     render(
-      <MemoryRouter initialEntries={['/deck']}>
-        <Routes>
-          <Route path="/deck" element={<DeckScreen />} />
-        </Routes>
-      </MemoryRouter>,
+      withMotion(
+        <MemoryRouter initialEntries={['/deck']}>
+          <Routes>
+            <Route path="/deck" element={<DeckScreen />} />
+          </Routes>
+        </MemoryRouter>,
+      ),
     )
     await user.click(screen.getByRole('button', { name: 'Nope' }))
     const leaving = document.querySelector<HTMLElement>('.swipe-card[inert]')

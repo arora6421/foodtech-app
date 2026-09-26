@@ -33,7 +33,8 @@ export function DishCard({ model, overlay }: DishCardProps) {
       aria-describedby={hintId}
     >
       {overlay}
-      <span id={hintId} className="sr-only">
+      {/* Read once, as the card's description; aria-hidden so it isn't read again as content. */}
+      <span id={hintId} className="sr-only" aria-hidden="true">
         {copy.deck.cardHint}
       </span>
       <div className="card-head" aria-hidden="true">
@@ -72,7 +73,7 @@ export function DishCard({ model, overlay }: DishCardProps) {
           <span style={{ marginLeft: 4 }}>{model.spiceWord}</span>
         </div>
         <div className="foot">
-          <div className="flex items-baseline gap-2" aria-hidden="true">
+          <div className="price-line flex items-baseline gap-2" aria-hidden="true">
             <span className="t-body card-venue">{model.venueName}</span>
             <span className="leader" />
             <span className="t-price">{model.priceLabel}</span>
@@ -129,7 +130,7 @@ export function DishTile({ model, onClick, action }: { model: TileModel; onClick
   )
   return (
     <div
-      className="tinted flex items-center gap-3"
+      className="dish-tile tinted flex items-center gap-3"
       style={{ '--tint': model.tint, borderRadius: 'var(--radius-card)', padding: '12px 14px' } as CSSProperties}
     >
       <DishImage
@@ -143,13 +144,13 @@ export function DishTile({ model, onClick, action }: { model: TileModel; onClick
         <button
           type="button"
           onClick={onClick}
-          className="flex min-h-11 flex-1 flex-col items-start gap-1 text-left"
+          className="flex min-h-11 min-w-0 flex-1 flex-col items-start gap-1 text-left [overflow-wrap:anywhere]"
           style={{ background: 'none', border: 0, padding: 0, color: 'inherit', cursor: 'pointer' }}
         >
           {body}
         </button>
       ) : (
-        <div className="flex flex-1 flex-col gap-1">{body}</div>
+        <div className="flex min-w-0 flex-1 flex-col gap-1 [overflow-wrap:anywhere]">{body}</div>
       )}
       {action}
     </div>

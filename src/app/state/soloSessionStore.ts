@@ -13,7 +13,7 @@ import {
   createSession,
   makeInput,
   poolSize,
-  precomputeBranches,
+  precomputeBranch,
   restoreSession,
   undoLast,
 } from '../services/engineAdapter'
@@ -131,8 +131,14 @@ export function createSoloSessionStore(deps: SoloStoreDeps = defaultDeps) {
           counterShown: next.counter.shown,
           counterRaw: next.counter.raw,
         })
+        // One idle task per branch, not one for both: a tap that lands mid-precompute waits for at
+        // most one engine step (M1.7: halves the worst swipe latency at 4× CPU). Same results.
         deps.schedule(() => {
-          if (get().state === next) precomputeBranches(next)
+          if (get().state !== next) return
+          precomputeBranch(next, 'yes')
+          deps.schedule(() => {
+            if (get().state === next) precomputeBranch(next, 'no')
+          })
         })
       }
       if (before && next.pivot.used > before.pivot.used) {
@@ -178,13 +184,21 @@ export function createSoloSessionStore(deps: SoloStoreDeps = defaultDeps) {
           // Refresh recovery: replay a stored session if it was made by this engine and catalogue.
           const saved = readJSON('session', STORAGE_KEYS.session, isPersisted)
           if (saved) {
+            let restored = false
             if (saved.engineVersion === ENGINE_VERSION && saved.catalogueVersion === MOCK_CATALOGUE_VERSION) {
-              set({ input: saved.input })
-              setAnalyticsSession(String(saved.input.seed))
-              commit(restoreSession(loaded, saved.input, saved.events), null, saved.view)
-            } else {
-              removeKey('session', STORAGE_KEYS.session)
+              // A stored session that can't be replayed (corrupted or edited storage) must not take the
+              // whole app down on every reload: drop it and start fresh instead.
+              try {
+                const state = restoreSession(loaded, saved.input, saved.events)
+                set({ input: saved.input })
+                setAnalyticsSession(String(saved.input.seed))
+                commit(state, null, saved.view)
+                restored = true
+              } catch {
+                set({ input: null, state: null, view: { kind: 'match' } })
+              }
             }
+            if (!restored) removeKey('session', STORAGE_KEYS.session)
           }
           track('app_opened', {})
         } catch {

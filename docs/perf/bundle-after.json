@@ -1,0 +1,114 @@
+{
+  "label": "after",
+  "mode": "production",
+  "date": "2026-09-26T13:01:51.079Z",
+  "js": {
+    "bytes": 605106,
+    "gzip": 190386,
+    "brotli": 165602
+  },
+  "initialGzip": 159680,
+  "chunks": [
+    {
+      "file": "assets/index-CWhVjviU.js",
+      "entry": true,
+      "dynamic": false,
+      "bytes": 511572,
+      "gzip": 159680,
+      "brotli": 138108,
+      "groups": {
+        "other": 4537,
+        "react": 563265,
+        "app": 85803,
+        "motion": 110713,
+        "react-router": 82068,
+        "domain": 6541,
+        "zod": 158318,
+        "engine": 48375,
+        "zustand": 1419,
+        "catalog": 49217,
+        "location": 274
+      },
+      "imports": []
+    },
+    {
+      "file": "assets/motionFeatures-CzGIT2a7.js",
+      "entry": false,
+      "dynamic": true,
+      "bytes": 93534,
+      "gzip": 30706,
+      "brotli": 27494,
+      "groups": {
+        "motion": 200616,
+        "app": 79
+      },
+      "imports": [
+        "assets/index-CWhVjviU.js"
+      ]
+    }
+  ],
+  "groups": {
+    "other": {
+      "bytes": 1414,
+      "gzip": 840,
+      "brotli": 729
+    },
+    "app": {
+      "bytes": 47872,
+      "gzip": 14878,
+      "brotli": 13438
+    },
+    "catalog": {
+      "bytes": 39076,
+      "gzip": 11349,
+      "brotli": 10231
+    },
+    "engine": {
+      "bytes": 32167,
+      "gzip": 12092,
+      "brotli": 11075
+    },
+    "motion": {
+      "bytes": 140084,
+      "gzip": 45489,
+      "brotli": 40718
+    },
+    "react": {
+      "bytes": 256392,
+      "gzip": 80765,
+      "brotli": 70102
+    },
+    "zod": {
+      "bytes": 84987,
+      "gzip": 23930,
+      "brotli": 21176
+    },
+    "zustand": {
+      "bytes": 620,
+      "gzip": 395,
+      "brotli": 346
+    }
+  },
+  "assets": [
+    {
+      "file": "assets/Fraunces-BmetuuTf.woff2",
+      "bytes": 110832
+    },
+    {
+      "file": "assets/Fraunces-Italic-C7jm6yFf.woff2",
+      "bytes": 136928
+    },
+    {
+      "file": "assets/InstrumentSans-YpsGnNuD.woff2",
+      "bytes": 30236
+    },
+    {
+      "file": "assets/g-app-BdtnWBcX.css",
+      "bytes": 27466
+    },
+    {
+      "file": "assets/grain-paper-SzE-9kA-.png",
+      "bytes": 14438
+    }
+  ]
+}

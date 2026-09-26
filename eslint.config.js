@@ -91,7 +91,12 @@ export default tseslint.config(
     ),
   },
   {
-    files: ['src/sim/**/*.ts', '*.config.{js,ts}', 'docs/**/*.mjs'],
+    files: ['src/sim/**/*.ts', '*.config.{js,ts}', 'docs/**/*.mjs', 'scripts/**/*.mjs'],
     languageOptions: { globals: globals.node },
+  },
+  {
+    // The perf script ships functions into the page (page.evaluate), which run in the browser.
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
 )

@@ -9,6 +9,7 @@ import { DishCard } from '../components/food/DishCard'
 import { soloSessionStore } from '../state/soloSessionStore'
 import { currentCard } from '../state/viewModels'
 import { DeckScreen } from './DeckScreen'
+import { withMotion } from '../testing/withMotion'
 
 // Motion's timing is covered by the browser pass; here every animation completes at once so the
 // tests pin behaviour: what commits, what the engine receives, where focus and navigation go.
@@ -35,12 +36,14 @@ const topName = () => topCard().querySelector('h2')!.textContent
 
 function renderDeck() {
   return render(
-    <MemoryRouter initialEntries={['/deck']}>
-      <Routes>
-        <Route path="/deck" element={<DeckScreen />} />
-        <Route path="/match" element={<p>match screen</p>} />
-      </Routes>
-    </MemoryRouter>,
+    withMotion(
+      <MemoryRouter initialEntries={['/deck']}>
+        <Routes>
+          <Route path="/deck" element={<DeckScreen />} />
+          <Route path="/match" element={<p>match screen</p>} />
+        </Routes>
+      </MemoryRouter>,
+    ),
   )
 }
 

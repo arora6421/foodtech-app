@@ -33,6 +33,9 @@
   /* ── Type roles ────────────────────────────────────────────── */
   .t-display-xl {
     font: italic 500 46px/0.95 var(--font-display);
+    /* 46px on a phone; smaller only when the screen is very narrow (e.g. 200% zoom), so a long
+       word like "shawarma" still fits its box (WCAG 1.4.10). */
+    font-size: clamp(28px, 13vw, 46px);
     font-variation-settings:
       'SOFT' 100,
       'WONK' 1,
@@ -428,13 +431,97 @@
     }
   }
 
+  /* Action rows. Below 300px wide (a phone at 200% zoom is ~195px) they reflow instead of
+     squeezing targets under 44px or pushing buttons off-screen (WCAG 1.4.10, M1.7 audit). */
+  .deck-actions {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 10px;
+  }
+  .match-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 48px;
+    gap: 8px;
+  }
+  .alt-tiles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .alt-tile > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  @media (max-width: 300px) {
+    .deck-actions {
+      grid-template-columns: 1fr 1fr;
+    }
+    .deck-actions > .btn-tertiary {
+      grid-column: 1 / -1;
+      order: 1;
+    }
+    .match-actions {
+      grid-template-columns: 1fr 48px;
+    }
+    .match-actions > :nth-child(2) {
+      grid-column: 1 / -1;
+      order: 1;
+    }
+    .alt-tiles {
+      grid-template-columns: 1fr;
+    }
+    /* List tiles: drop the decorative thumbnail and put the action under the text. */
+    .dish-tile {
+      flex-wrap: wrap;
+    }
+    .dish-tile .dish-media-thumb {
+      display: none;
+    }
+    .dish-tile > :first-child,
+    .dish-tile > .dish-media-thumb + * {
+      flex-basis: 100%;
+    }
+    .dish-tile > :last-child:not(:first-child) {
+      margin-left: auto;
+    }
+    /* Deck card: at this width, readable text beats the fixed layout. Names, tags and venue wrap
+       instead of truncating, the frame takes what's left, and the card scrolls if it must. */
+    /* (Selectors carry an extra class so they beat the base card rules, which come later.) */
+    .swipe-card .dish-card {
+      overflow-y: auto;
+    }
+    .dish-card .card-title {
+      height: auto;
+    }
+    .dish-card .card-title .card-name {
+      display: block;
+      -webkit-line-clamp: unset;
+      overflow: visible;
+    }
+    .dish-card .card-title .arch,
+    .dish-card .card-details .card-row,
+    .dish-card .card-details .card-venue,
+    .dish-card .card-meta p {
+      white-space: normal;
+      overflow: visible;
+    }
+    .dish-card .card-frame-slot {
+      min-height: 4em;
+    }
+    .price-line {
+      flex-wrap: wrap;
+    }
+  }
+
   /* Swipe stack: the top card is dragged horizontally; vertical pans still scroll the page. */
   .deck-stack {
     position: relative;
     flex: 1;
-    /* The text rows take ~308px and the frame gets the rest. Low enough that an iPhone SE-sized
-       screen (~550px visible) fits without scrolling; the frame is what shrinks. */
-    min-height: 360px;
+    /* The text rows take ~20.5em (308px) and the frame gets the rest. Low enough that an iPhone
+       SE-sized screen (~550px visible) fits without scrolling; the frame is what shrinks. In em so
+       that if text grows, the page scrolls rather than the card clipping its text. */
+    min-height: 24em;
     margin: 8px 0 14px;
   }
   .swipe-card {
@@ -459,12 +546,12 @@
       inset 0 0 0 1px var(--color-rule),
       var(--shadow-card);
   }
-  /* Fixed-height rows, so every card has the same layout whatever the dish's text. */
+  /* Every card has the same layout whatever the dish's text: single-line rows (no wrapping) and a
+     title area sized for two name lines. Heights are in em so they grow with the text. */
   .card-head {
     flex: none;
     display: flex;
     justify-content: space-between;
-    height: 15px;
     margin-bottom: 10px;
   }
   .card-title {
@@ -472,16 +559,17 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end; /* one-line names sit on the dish type, next to the frame */
-    /* 2 name lines (2 × 28 × 1.24) + 1 dish-type line (17 × 1.24), rounded up. Checked by
-       src/app/design/cardTitle.test.ts against the font files. */
-    height: 92px;
+    /* In units of the name size: 2 name lines (2 × 1.24em) + 1 dish-type line (17/28 × 1.24em),
+       rounded up. Checked by src/app/design/cardTitle.test.tsx against the font files. */
+    font-size: 28px;
+    height: 3.25em;
     margin-bottom: 12px;
   }
   /* Line heights are ≥ Fraunces' content area (ascent + descent = 1.233em). The clamp below hides
      overflow, so a tighter leading would cut the descenders off the last line (the g in "goong"). */
   .card-name {
     margin: 0;
-    font: 500 28px/1.24 var(--font-display);
+    font: 500 1em/1.24 var(--font-display);
     font-variation-settings:
       'SOFT' 30,
       'opsz' 144;
@@ -493,7 +581,7 @@
   }
   .dish-card .arch {
     margin: 0;
-    font: italic 400 17px/1.24 var(--font-display);
+    font: italic 400 0.6072em/1.24 var(--font-display); /* 17px at the 28px name size */
     font-variation-settings: 'WONK' 1;
     color: var(--color-ink-muted);
     white-space: nowrap;
@@ -512,7 +600,6 @@
     margin-top: 12px;
   }
   .card-row {
-    height: 15px;
     margin: 0 0 10px;
     white-space: nowrap;
     overflow: hidden;
@@ -527,7 +614,6 @@
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    height: 17px;
     margin-top: 4px;
   }
   .card-meta p {
@@ -572,8 +658,10 @@
     border-top: 1px dashed color-mix(in oklab, var(--color-ink) 35%, transparent);
     padding-top: 12px;
   }
+  /* The dot stays with the item before it, but a line can break after it, so a list can wrap on a
+     narrow screen instead of overflowing as one long "word". */
   .dot-list > * + *::before {
-    content: '\00a0·\00a0';
+    content: '\00a0·\0020';
   }
   .spice {
     display: flex;

@@ -14,7 +14,7 @@ export function DeckActions({
   disabled?: boolean
 }) {
   return (
-    <div className="grid items-center gap-2.5" style={{ gridTemplateColumns: '1fr auto 1fr' }}>
+    <div className="deck-actions">
       <button type="button" className="vote vote-no" onClick={onNope} disabled={disabled}>
         <Icon name="cross" />
         {copy.deck.nope}

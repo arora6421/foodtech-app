@@ -92,7 +92,7 @@ export function SavedDetailScreen() {
                 {item.archetypeName}
               </h1>
             </div>
-            <div className="flex items-baseline gap-2">
+            <div className="price-line flex items-baseline gap-2">
               <span className="t-body dot-list">
                 {item.offeringName.toLowerCase() !== item.archetypeName.toLowerCase() && (
                   <span>{item.offeringName}</span>

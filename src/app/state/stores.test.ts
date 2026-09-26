@@ -68,6 +68,63 @@ describe('soloSessionStore', () => {
     expect(sessionStorage.getItem(STORAGE_KEYS.session)).toBeNull()
   })
 
+  it('a stored session that cannot be replayed is dropped, and the app still starts', async () => {
+    const a = createSoloSessionStore(deps())
+    await a.getState().init()
+    a.getState().start({ moods: ['spicy'], intent: 'normal' })
+    const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEYS.session)!)
+    saved.events = [{ type: 'swipe', verdict: 'maybe', cardIndex: 99 }, { type: 'nonsense' }]
+    saved.input = { ...saved.input, context: { ...saved.input.context, origin: null } }
+    sessionStorage.setItem(STORAGE_KEYS.session, JSON.stringify(saved))
+
+    const b = createSoloSessionStore(deps())
+    await b.getState().init()
+    expect(b.getState().status).toBe('ready')
+    expect(b.getState().state).toBeNull()
+    expect(sessionStorage.getItem(STORAGE_KEYS.session)).toBeNull()
+    expect(b.getState().start({ moods: [], intent: 'normal' })).toBe(true)
+  })
+
+  it('works when browser storage is blocked (every access throws)', async () => {
+    const blocked = {
+      getItem: () => {
+        throw new DOMException('blocked', 'SecurityError')
+      },
+      setItem: () => {
+        throw new DOMException('quota', 'QuotaExceededError')
+      },
+      removeItem: () => {
+        throw new DOMException('blocked', 'SecurityError')
+      },
+    }
+    const realSession = Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage')!
+    const realLocal = Object.getOwnPropertyDescriptor(globalThis, 'localStorage')!
+    Object.defineProperty(globalThis, 'sessionStorage', { configurable: true, value: blocked })
+    Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: blocked })
+    try {
+      const store = createSoloSessionStore(deps())
+      await store.getState().init()
+      expect(store.getState().status).toBe('ready')
+      expect(store.getState().start({ moods: ['comforting'], intent: 'normal' })).toBe(true)
+      store.getState().swipe('yes')
+      expect(store.getState().state!.events).toHaveLength(1)
+      const saved = createSavedStore()
+      saved.getState().save({
+        archetypeId: 'a',
+        offeringId: 'o',
+        archetypeName: 'A',
+        offeringName: 'O',
+        venueName: 'V',
+        priceLabel: '£1.00',
+        tint: '#000000',
+      })
+      expect(saved.getState().items).toHaveLength(1) // kept in memory for this visit
+    } finally {
+      Object.defineProperty(globalThis, 'sessionStorage', realSession)
+      Object.defineProperty(globalThis, 'localStorage', realLocal)
+    }
+  })
+
   it('undo from the match screen goes back to the deck', async () => {
     const store = await finishedSession()
     expect(store.getState().state!.result).not.toBeNull()

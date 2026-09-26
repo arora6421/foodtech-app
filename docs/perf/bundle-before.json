@@ -1,0 +1,152 @@
+{
+  "label": "before",
+  "mode": "production",
+  "date": "2026-09-26T12:13:25.938Z",
+  "js": {
+    "bytes": 612991,
+    "gzip": 190960,
+    "brotli": 165028
+  },
+  "initialGzip": 190960,
+  "chunks": [
+    {
+      "file": "assets/index-CwjdmEhT.js",
+      "entry": true,
+      "dynamic": false,
+      "bytes": 612991,
+      "gzip": 190960,
+      "brotli": 165028,
+      "groups": {
+        "other": 4537,
+        "react": 563265,
+        "app": 83406,
+        "react-router": 82100,
+        "zustand": 1419,
+        "domain": 6547,
+        "zod": 158346,
+        "catalog": 49217,
+        "location": 274,
+        "engine": 48540,
+        "app/debug": 24411,
+        "motion": 310190
+      }
+    }
+  ],
+  "groups": {
+    "other": {
+      "bytes": 1287,
+      "gzip": 783,
+      "brotli": 676
+    },
+    "app": {
+      "bytes": 40262,
+      "gzip": 12273,
+      "brotli": 11078
+    },
+    "app/debug": {
+      "bytes": 18581,
+      "gzip": 6510,
+      "brotli": 5943
+    },
+    "catalog": {
+      "bytes": 39090,
+      "gzip": 11359,
+      "brotli": 10205
+    },
+    "engine": {
+      "bytes": 32274,
+      "gzip": 12154,
+      "brotli": 11177
+    },
+    "motion": {
+      "bytes": 139689,
+      "gzip": 45366,
+      "brotli": 40549
+    },
+    "react": {
+      "bytes": 256384,
+      "gzip": 80765,
+      "brotli": 70112
+    },
+    "zod": {
+      "bytes": 84987,
+      "gzip": 23930,
+      "brotli": 21176
+    },
+    "zustand": {
+      "bytes": 620,
+      "gzip": 396,
+      "brotli": 353
+    }
+  },
+  "assets": [
+    {
+      "file": "assets/Fraunces-BR5x10i8.ttf",
+      "bytes": 360440
+    },
+    {
+      "file": "assets/Fraunces-Italic-BQlet8Xg.ttf",
+      "bytes": 414904
+    },
+    {
+      "file": "assets/InstrumentSans-s12UeAcm.ttf",
+      "bytes": 194336
+    },
+    {
+      "file": "assets/beef-suya-BsEQGSo6.jpg",
+      "bytes": 233651
+    },
+    {
+      "file": "assets/beef-suya-PIkgdWGr.png",
+      "bytes": 1507688
+    },
+    {
+      "file": "assets/chana-masala-B3sfRpo4.png",
+      "bytes": 1262267
+    },
+    {
+      "file": "assets/chana-masala-HaOz38zK.jpg",
+      "bytes": 199016
+    },
+    {
+      "file": "assets/chicken-larb-BUbU0oZJ.png",
+      "bytes": 1411068
+    },
+    {
+      "file": "assets/chicken-larb-Cxb8RIfW.jpg",
+      "bytes": 208047
+    },
+    {
+      "file": "assets/g-app-DPJIVgIi.css",
+      "bytes": 26220
+    },
+    {
+      "file": "assets/grain-paper-SzE-9kA-.png",
+      "bytes": 14438
+    },
+    {
+      "file": "assets/margherita-pizza-BlaOF9VY.png",
+      "bytes": 1500833
+    },
+    {
+      "file": "assets/margherita-pizza-DGvgk_qc.jpg",
+      "bytes": 232931
+    },
+    {
+      "file": "assets/mezze-platter-BJwxkjKR.png",
+      "bytes": 1341937
+    },
+    {
+      "file": "assets/mezze-platter-DpSWIYPF.jpg",
+      "bytes": 217530
+    },
+    {
+      "file": "assets/tonkotsu-ramen--MTGTXBN.jpg",
+      "bytes": 198507
+    },
+    {
+      "file": "assets/tonkotsu-ramen-BzWfk5h5.png",
+      "bytes": 1299007
+    }
+  ]
+}

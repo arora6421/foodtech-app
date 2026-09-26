@@ -105,15 +105,30 @@ export function CravingScreen() {
       </div>
 
       <div style={{ marginTop: 'auto', paddingTop: 12 }}>
-        <button type="button" className="settings-row" onClick={() => setSheet('diet')}>
+        <button
+          type="button"
+          className="settings-row"
+          aria-label={`${copy.craving.diet}: ${dietLabel}`}
+          onClick={() => setSheet('diet')}
+        >
           {copy.craving.diet}
           <b>{dietLabel}</b>
         </button>
-        <button type="button" className="settings-row" onClick={() => setSheet('budget')}>
+        <button
+          type="button"
+          className="settings-row"
+          aria-label={`${copy.craving.budget}: ${copy.budget[budget]}`}
+          onClick={() => setSheet('budget')}
+        >
           {copy.craving.budget}
           <b>{copy.budget[budget]}</b>
         </button>
-        <button type="button" className="settings-row" onClick={() => setSheet('eating')}>
+        <button
+          type="button"
+          className="settings-row"
+          aria-label={`${copy.craving.eating}: ${copy.fulfilment[fulfilment]}`}
+          onClick={() => setSheet('eating')}
+        >
           {copy.craving.eating}
           <b>{copy.fulfilment[fulfilment]}</b>
         </button>

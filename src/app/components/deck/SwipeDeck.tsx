@@ -1,8 +1,7 @@
 import { useRef } from 'react'
 import {
   AnimatePresence,
-  animate,
-  motion,
+  m,
   useIsPresent,
   useMotionValue,
   usePresenceData,
@@ -12,6 +11,7 @@ import {
 import type { PanInfo } from 'motion/react'
 import { copy } from '../../copy/en-GB'
 import { MOTION } from '../../design/motion'
+import { animateValue } from '../../design/motionRuntime'
 import type { DishCardModel } from '../../state/viewModels'
 import { DishCard } from '../food/DishCard'
 
@@ -34,7 +34,12 @@ interface MoveContext {
 
 const S = MOTION.swipe
 const sec = (ms: number) => ms / 1000
-const flyDistance = () => Math.max(typeof window === 'undefined' ? 0 : window.innerWidth, 480) * 1.1
+// Read the viewport width once and on resize, never mid-swipe: reading window.innerWidth right after
+// React has changed the DOM forces a synchronous layout of the whole page (~60 ms at 4× CPU, M1.7).
+let viewportWidth = typeof window === 'undefined' ? 0 : window.innerWidth
+if (typeof window !== 'undefined')
+  window.addEventListener('resize', () => (viewportWidth = window.innerWidth), { passive: true })
+const flyDistance = () => Math.max(viewportWidth, 480) * 1.1
 
 const variants = {
   initial: ({ move, reduced }: MoveContext) => {
@@ -141,15 +146,15 @@ function SwipeCard({
 
   const onDragEnd = (_: unknown, info: PanInfo) => {
     const verdict = dragVerdict(info.offset.x, info.velocity.x, ref.current?.offsetWidth || 320)
-    if (!verdict) return void animate(x, 0, S.springBack)
+    if (!verdict) return animateValue(x, 0, S.springBack)
     // Fly now, from the finger's own velocity, and hand the verdict to the engine only after that
     // first frame has painted, so its work (and React's) never lands on the frame the card lets go.
-    void animate(x, (verdict === 'yes' ? 1 : -1) * flyDistance(), { ...S.fling, velocity: info.velocity.x })
+    animateValue(x, (verdict === 'yes' ? 1 : -1) * flyDistance(), { ...S.fling, velocity: info.velocity.x })
     requestAnimationFrame(() => setTimeout(() => onVerdict(verdict, 'drag', model.key), 0))
   }
 
   return (
-    <motion.div
+    <m.div
       ref={ref}
       className="swipe-card"
       custom={ctx}
@@ -168,15 +173,15 @@ function SwipeCard({
         model={model}
         overlay={
           <>
-            <motion.span className="stamp stamp-yes" style={{ opacity: inked === 1 ? 1 : yesInk }} aria-hidden="true">
+            <m.span className="stamp stamp-yes" style={{ opacity: inked === 1 ? 1 : yesInk }} aria-hidden="true">
               {copy.deck.yes}
-            </motion.span>
-            <motion.span className="stamp stamp-no" style={{ opacity: inked === -1 ? 1 : noInk }} aria-hidden="true">
+            </m.span>
+            <m.span className="stamp stamp-no" style={{ opacity: inked === -1 ? 1 : noInk }} aria-hidden="true">
               {copy.deck.nope}
-            </motion.span>
+            </m.span>
           </>
         }
       />
-    </motion.div>
+    </m.div>
   )
 }

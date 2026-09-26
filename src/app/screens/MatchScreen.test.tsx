@@ -8,6 +8,7 @@ import { savedStore } from '../state/savedStore'
 import { soloSessionStore } from '../state/soloSessionStore'
 import { matchModel } from '../state/viewModels'
 import { MatchScreen } from './MatchScreen'
+import { withMotion } from '../testing/withMotion'
 
 beforeAll(() => {
   MotionGlobalConfig.skipAnimations = true
@@ -40,13 +41,15 @@ const model = () => {
 
 function renderMatch() {
   return render(
-    <MemoryRouter initialEntries={['/match']}>
-      <Routes>
-        <Route path="/match" element={<MatchScreen />} />
-        <Route path="/deck" element={<p>deck screen</p>} />
-        <Route path="/craving" element={<p>craving screen</p>} />
-      </Routes>
-    </MemoryRouter>,
+    withMotion(
+      <MemoryRouter initialEntries={['/match']}>
+        <Routes>
+          <Route path="/match" element={<MatchScreen />} />
+          <Route path="/deck" element={<p>deck screen</p>} />
+          <Route path="/craving" element={<p>craving screen</p>} />
+        </Routes>
+      </MemoryRouter>,
+    ),
   )
 }
 
@@ -128,5 +131,42 @@ describe('MatchScreen', () => {
     renderMatch()
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Pick one of these')
     expect(screen.queryByRole('button', { name: 'Show me something else' })).toBeNull()
+  })
+
+  it('in a pick-list session, says "Back to the list" and "Top of the list", and each does what it says', async () => {
+    const user = userEvent.setup()
+    soloSessionStore.getState().notQuite()
+    for (let i = 0; i < 20 && !soloSessionStore.getState().state!.result; i++) soloSessionStore.getState().swipe('no')
+    soloSessionStore.getState().notQuite()
+    const top = soloSessionStore.getState().state!.result!.hero.archetypeId
+    renderMatch()
+
+    // Choose a dish from the list that isn't the top one.
+    const tiles = [...document.querySelectorAll<HTMLButtonElement>('main li button, main .dish-tile button')]
+    await user.click(tiles[1] ?? tiles[0]!)
+    expect(screen.getByRole('button', { name: 'Back to the list' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Return to our match' })).toBeNull()
+
+    // The engine's top dish is labelled "Top of the list" and opens that dish (not the list).
+    const topTile = [...document.querySelectorAll<HTMLButtonElement>('.alt-tile')].find((b) =>
+      b.textContent!.includes('Top of the list'),
+    )
+    expect(topTile).toBeTruthy()
+    expect(document.body.textContent).not.toContain('Our match')
+    await user.click(topTile!)
+    expect(soloSessionStore.getState().view).toMatchObject({ kind: 'alternative', archetypeId: top })
+
+    // "Back to the list" returns to the list.
+    await user.click(screen.getByRole('button', { name: 'Back to the list' }))
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Pick one of these')
+  })
+
+  it('outside pick-list sessions the approved runner-up copy is unchanged', async () => {
+    const user = userEvent.setup()
+    renderMatch()
+    await user.click(document.querySelector<HTMLButtonElement>('.alt-tile')!)
+    expect(screen.getByRole('button', { name: 'Return to our match' })).toBeTruthy()
+    expect(screen.queryByText('Back to the list')).toBeNull()
+    expect(screen.queryByText('Top of the list')).toBeNull()
   })
 })

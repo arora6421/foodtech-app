@@ -66,12 +66,17 @@ export function restoreSession(loaded: LoadedCatalogue, dto: SessionInputDTO, ev
 // looking at the card. Using the cached result is exactly equivalent to computing it fresh.
 const branches = new WeakMap<SoloState, { yes?: SoloState; no?: SoloState }>()
 
-export function precomputeBranches(state: SoloState): void {
+/** Pre-compute the state after one answer, so that swipe applies instantly. */
+export function precomputeBranch(state: SoloState, verdict: 'yes' | 'no'): void {
   if (!state.current || state.result) return
   const cached = branches.get(state) ?? {}
-  cached.yes ??= soloReducer(state, { type: 'swipe', verdict: 'yes' })
-  cached.no ??= soloReducer(state, { type: 'swipe', verdict: 'no' })
+  cached[verdict] ??= soloReducer(state, { type: 'swipe', verdict })
   branches.set(state, cached)
+}
+
+export function precomputeBranches(state: SoloState): void {
+  precomputeBranch(state, 'yes')
+  precomputeBranch(state, 'no')
 }
 
 /** The next card after each possible answer, for image prefetching. Null when the session would end. */

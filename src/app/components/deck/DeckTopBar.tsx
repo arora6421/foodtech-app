@@ -14,7 +14,7 @@ export function DeckTopBar({
   onDecide: () => void
 }) {
   return (
-    <div className="flex min-h-11 items-center justify-between gap-2">
+    <div className="flex min-h-11 flex-wrap items-center justify-between gap-x-2">
       <button type="button" className="icon-btn t-label" onClick={onUndo} disabled={!canUndo}>
         <Icon name="undo" />
         {copy.deck.undo}

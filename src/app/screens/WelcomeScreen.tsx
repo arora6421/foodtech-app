@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { motion, useReducedMotion } from 'motion/react'
+import { m, useReducedMotion } from 'motion/react'
 import { useNavigate } from 'react-router'
 import { copy, PRODUCT_NAME } from '../copy/en-GB'
 import { Icon } from '../components/primitives/Icon'
@@ -45,7 +45,7 @@ export function WelcomeScreen() {
       </p>
       <div aria-hidden="true" className="relative my-3 flex-1" style={{ minHeight: 330 }}>
         {FAN.map((d, i) => (
-          <motion.div
+          <m.div
             key={d.name}
             className="tinted absolute flex flex-col gap-1.5"
             style={{
@@ -68,7 +68,7 @@ export function WelcomeScreen() {
             <span className="t-display-l" style={{ fontSize: 26 }}>
               {d.name}
             </span>
-          </motion.div>
+          </m.div>
         ))}
       </div>
       {status === 'error' && (
