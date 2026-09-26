@@ -1,5 +1,5 @@
 import { deliveryMinutes, distanceMiles, walkMinutes } from '../../domain'
-import type { DishArchetype, Flavour, Fulfilment, Offering, Texture, Venue } from '../../domain'
+import type { DishArchetype, Flavour, Format, Fulfilment, Offering, Texture, Venue } from '../../domain'
 import { effectiveAxes } from '../../engine/features/featurize'
 import type { Explanation } from '../../engine/explain/explain'
 import type { CardChoice, ConfidenceLabel, SoloState, StopReason } from '../../engine/session/types'
@@ -27,7 +27,13 @@ export interface DishCardModel {
   distanceLabel: string
   spiceLevel: 0 | 1 | 2 | 3 | 4
   spiceWord: string
+  /** The spice level as a tag, e.g. "Mild heat". */
+  spiceTag: string
   tags: string[]
+  /** Cuisine and format, e.g. "Japanese noodles": the card's top line. */
+  kind: string
+  /** Up to three key ingredients from the catalogue: the card's "Inside" list. */
+  inside: string[]
   tint: string
   /** The dish's photo, or null for the designed no-photo state. */
   image: ResolvedImage | null
@@ -87,6 +93,28 @@ const FLAVOUR_WORD: Record<Flavour, string> = {
   aromatic: 'Warm spice',
 }
 export const SPICE_WORD = ['No heat', 'Mild', 'Medium', 'Hot', 'Very hot'] as const
+export const SPICE_TAG = ['No heat', 'Mild heat', 'Medium heat', 'Hot', 'Very hot'] as const
+
+/** The catalogue format as words, for "Japanese noodles". Where a format covers two kinds of dish,
+ *  both are named rather than guessing which this one is. */
+const FORMAT_LABEL: Record<Format, string> = {
+  noodles: 'noodles',
+  rice: 'rice',
+  curry_stew: 'curry or stew',
+  soup: 'soup',
+  burger: 'burger',
+  sandwich_wrap: 'sandwich or wrap',
+  pizza_flatbread: 'pizza or flatbread',
+  pasta: 'pasta',
+  tacos_burrito: 'tacos or burrito',
+  salad_bowl: 'salad or bowl',
+  dumplings_buns: 'dumplings or buns',
+  protein_plate: 'grill',
+  small_plates: 'small plates',
+  pie_bake: 'pie or bake',
+  breakfast: 'breakfast',
+  dessert: 'dessert',
+}
 
 export const priceLabel = (pence: number) => `£${(pence / 100).toFixed(2)}`
 export const distanceLabel = (miles: number) => `${miles < 10 ? miles.toFixed(1) : Math.round(miles)} mi`
@@ -162,7 +190,10 @@ export function dishCard(
     distanceLabel: dist,
     spiceLevel: spice,
     spiceWord: SPICE_WORD[spice],
+    spiceTag: SPICE_TAG[spice],
     tags: tagsFor(a),
+    kind: `${CUISINE_LABEL(a.cuisine)} ${FORMAT_LABEL[a.format]}`,
+    inside: a.keyIngredients.slice(0, 3),
     tint: a.image.dominantColour,
     image: resolveDishImage(imageSource(), a, o, v),
     initial: initialOf(a.name),

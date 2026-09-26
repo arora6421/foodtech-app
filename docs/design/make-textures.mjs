@@ -57,7 +57,36 @@ function grain(tone, maxAlpha, seed) {
   ])
 }
 
+/**
+ * Print grain for Crave's cover colours: every pixel has a random grey and a random alpha (each the
+ * mean of two uniforms, so mid-heavy), like SVG feTurbulence fractal noise at baseFrequency 0.85
+ * desaturated. Composited with mix-blend-mode: multiply at --grain-opacity, it gives the printed
+ * magazine speckle without a live SVG filter.
+ */
+function printGrain(seed) {
+  const rnd = mulberry32(seed)
+  const raw = Buffer.alloc((SIZE * 2 + 1) * SIZE)
+  for (let y = 0; y < SIZE; y++) {
+    const row = y * (SIZE * 2 + 1)
+    raw[row] = 0
+    for (let x = 0; x < SIZE; x++) {
+      raw[row + 1 + x * 2] = Math.round(((rnd() + rnd()) / 2) * 255)
+      raw[row + 2 + x * 2] = Math.round(((rnd() + rnd()) / 2) * 255)
+    }
+  }
+  const ihdr = Buffer.alloc(13)
+  ihdr.writeUInt32BE(SIZE, 0); ihdr.writeUInt32BE(SIZE, 4)
+  ihdr[8] = 8; ihdr[9] = 4; ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0
+  return Buffer.concat([
+    Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
+    chunk('IHDR', ihdr),
+    chunk('IDAT', deflateSync(raw, { level: 9 })),
+    chunk('IEND', Buffer.alloc(0)),
+  ])
+}
+
 mkdirSync(new URL('./textures/', import.meta.url), { recursive: true })
 writeFileSync(new URL('./textures/grain-paper.png', import.meta.url), grain(70, 40, 1)) // warm-dark specks for light paper (A)
 writeFileSync(new URL('./textures/grain-night.png', import.meta.url), grain(245, 22, 2)) // pale specks for the dark ground (B)
-console.log('wrote textures/grain-paper.png, textures/grain-night.png')
+writeFileSync(new URL('../../src/app/design/textures/grain-print.png', import.meta.url), printGrain(3)) // Crave covers
+console.log('wrote textures/grain-paper.png, textures/grain-night.png, src/app/design/textures/grain-print.png')

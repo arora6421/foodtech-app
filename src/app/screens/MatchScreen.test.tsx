@@ -58,7 +58,7 @@ describe('MatchScreen', () => {
     renderMatch()
     const m = model()
     expect(screen.getByRole('heading', { level: 2 }).textContent).toBe(m.hero.archetypeName)
-    const shown = [...document.querySelectorAll('.reasons li')].map((li) => li.textContent)
+    const shown = [...document.querySelectorAll('.match-reasons .reason-text')].map((li) => li.textContent)
     expect(shown).toEqual(m.reasons.map((r) => r.text))
     expect(screen.getByText(m.confidenceLabel)).toBeTruthy()
   })
@@ -73,7 +73,7 @@ describe('MatchScreen', () => {
     renderMatch()
     const hero = model().hero.archetypeName
     const engine = soloSessionStore.getState().state!
-    const tile = document.querySelector<HTMLButtonElement>('.alt-tile')
+    const tile = document.querySelector<HTMLButtonElement>('.or-try-tile')
     expect(tile).not.toBeNull()
     await user.click(tile!)
 
@@ -148,7 +148,7 @@ describe('MatchScreen', () => {
     expect(screen.queryByRole('button', { name: 'Return to our match' })).toBeNull()
 
     // The engine's top dish is labelled "Top of the list" and opens that dish (not the list).
-    const topTile = [...document.querySelectorAll<HTMLButtonElement>('.alt-tile')].find((b) =>
+    const topTile = [...document.querySelectorAll<HTMLButtonElement>('.or-try-tile')].find((b) =>
       b.textContent!.includes('Top of the list'),
     )
     expect(topTile).toBeTruthy()
@@ -164,7 +164,7 @@ describe('MatchScreen', () => {
   it('outside pick-list sessions the approved runner-up copy is unchanged', async () => {
     const user = userEvent.setup()
     renderMatch()
-    await user.click(document.querySelector<HTMLButtonElement>('.alt-tile')!)
+    await user.click(document.querySelector<HTMLButtonElement>('.or-try-tile')!)
     expect(screen.getByRole('button', { name: 'Return to our match' })).toBeTruthy()
     expect(screen.queryByText('Back to the list')).toBeNull()
     expect(screen.queryByText('Top of the list')).toBeNull()

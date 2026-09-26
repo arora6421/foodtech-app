@@ -65,7 +65,7 @@ export function WelcomeScreen() {
             transition={{ delay: 0.12 + i * 0.07, duration: 0.5, ease: MOTION.settleEase }}
           >
             <span className="t-label">{d.cuisine}</span>
-            <span className="t-display-l" style={{ fontSize: 26 }}>
+            <span className="t-display-l" style={{ fontSize: 'clamp(17px, 6.6vw, 26px)' }}>
               {d.name}
             </span>
           </m.div>

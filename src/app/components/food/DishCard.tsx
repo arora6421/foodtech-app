@@ -1,18 +1,21 @@
 import { useId, useState } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
 import { copy } from '../../copy/en-GB'
+import { coverFor } from '../../design/covers'
+import { nameTier } from '../../design/nameFit'
 import type { ResolvedImage } from '../../services/imageResolver'
 import type { DishCardModel } from '../../state/viewModels'
-import { Chilli } from '../primitives/Icon'
-import { DishImage, MenuMark } from './DishImage'
+import { DishImage, MenuMark, PlateArt } from './DishImage'
 
-// The swipe card. One layout for every dish, photo or not, so the deck never changes size:
-//   header · name (two-line slot) + dish type · FRAME · tags · spice · venue/price · allergens
-// Every text row has a fixed height; the frame is the largest box of the chosen shape that fits
-// what's left, so it's identical on every card on a given phone and shrinks rather than scrolls
-// on short screens. With no photo (or a failed one) the frame shows the no-photo art: the card
-// number, menu style. Direction A: paper tinted with the dish's colour, a menu-style price line.
-// The article's label describes the dish, so everything visual inside is decorative.
+// The swipe card, as a magazine cover ("Crave", docs/design/crave-design-handoff/03 and 04).
+//   kind + card number · rule · the dish name (two lines at most) ·
+//   "Inside" (up to three key ingredients) beside the plate · the price sticker ·
+//   tags · rule · venue and distance · listed allergens
+// One layout for every dish, photo or not: every text zone has a fixed size, and the plate sits at
+// the same position and size on every card on a given phone, bleeding off the right edge and never
+// over any text (checked for every dish by scripts/card-layout-audit.mjs). Without a photo (or if it
+// fails) the plate is drawn as an outline with the dish's initial. The article's label describes the
+// dish, so everything visual inside is decorative.
 
 export interface DishCardProps {
   model: DishCardModel
@@ -20,14 +23,16 @@ export interface DishCardProps {
   overlay?: ReactNode
 }
 
+const cardNo = (n: number) => String(n).padStart(2, '0')
+
 export function DishCard({ model, overlay }: DishCardProps) {
   const hintId = useId()
   const allergenId = useId()
   const [showAllergens, setShowAllergens] = useState(false)
   return (
     <article
-      className="dish-card tinted"
-      style={{ '--tint': model.tint } as CSSProperties}
+      className="dish-card cover"
+      style={{ '--cover': coverFor(model.tint) } as CSSProperties}
       tabIndex={0}
       aria-label={model.a11yLabel}
       aria-describedby={hintId}
@@ -37,65 +42,67 @@ export function DishCard({ model, overlay }: DishCardProps) {
       <span id={hintId} className="sr-only" aria-hidden="true">
         {copy.deck.cardHint}
       </span>
-      <div className="card-head" aria-hidden="true">
-        <span className="t-label">{model.cuisineLabel}</span>
-        {model.cardNumber !== null && <span className="t-label">Card {model.cardNumber}</span>}
+      <div className="card-top" aria-hidden="true">
+        <span className="card-kind">{model.kind}</span>
+        {model.cardNumber !== null && <span className="card-no">{cardNo(model.cardNumber)}</span>}
       </div>
-      <div className="card-title" aria-hidden="true">
-        <h2 className="card-name">{model.offeringName}</h2>
-        <p className="arch">{model.showArchetype ? model.archetypeName : ' '}</p>
+      <div className="card-name-zone" aria-hidden="true">
+        <h2 className={`card-name name-${nameTier(model.archetypeName)}`}>{model.archetypeName}</h2>
       </div>
-      <div className="card-frame-slot">
-        <DishImage
-          variant="card"
-          image={model.image}
-          tint={model.tint}
-          art={<MenuMark text={model.cardNumber !== null ? String(model.cardNumber) : model.initial} />}
-          decorative
-          priority
-        />
+      <div className="card-middle">
+        <div className="card-inside" aria-hidden="true">
+          <span className="t-kicker">{copy.deck.inside}</span>
+          <ul>
+            {model.inside.map((i) => (
+              <li key={i}>{i}</li>
+            ))}
+          </ul>
+        </div>
+        <div className="card-plate">
+          <DishImage
+            variant="plate"
+            image={model.image}
+            tint={model.tint}
+            art={<PlateArt initial={model.initial} />}
+            decorative
+            priority
+          />
+        </div>
+        <div className="price-sticker" aria-hidden="true">
+          {model.priceLabel}
+        </div>
         {showAllergens && (
-          <p id={allergenId} className="allergen-panel t-caption">
+          <p id={allergenId} className="allergen-panel">
             {model.allergens.join(', ')}
           </p>
         )}
       </div>
-      <div className="card-details">
-        <p className="t-label dot-list card-row" aria-hidden="true">
-          {model.tags.map((t) => (
-            <span key={t}>{t}</span>
+      <div className="card-bottom">
+        <p className="card-pills" aria-hidden="true">
+          {[...model.tags, model.spiceTag].map((t) => (
+            <span key={t} className="pill">
+              {t}
+            </span>
           ))}
         </p>
-        <div className="spice t-label card-row" aria-hidden="true">
-          {[1, 2, 3, 4].map((n) => (
-            <Chilli key={n} off={n > model.spiceLevel} />
-          ))}
-          <span style={{ marginLeft: 4 }}>{model.spiceWord}</span>
+        <div className="card-where" aria-hidden="true">
+          <span className="card-venue">{model.venueName}</span>
+          <span className="card-distance">
+            {model.distanceLabel} · {model.timeLabel}
+          </span>
         </div>
-        <div className="foot">
-          <div className="price-line flex items-baseline gap-2" aria-hidden="true">
-            <span className="t-body card-venue">{model.venueName}</span>
-            <span className="leader" />
-            <span className="t-price">{model.priceLabel}</span>
-          </div>
-          {/* Time and distance share their line with the allergen toggle: no extra row. */}
-          <div className="card-meta">
-            <p className="t-caption dot-list" aria-hidden="true">
-              <span>{model.timeLabel}</span>
-              <span>{model.distanceLabel}</span>
-            </p>
-            {model.allergens.length > 0 && (
-              <button
-                type="button"
-                className="t-caption card-allergen-toggle"
-                aria-expanded={showAllergens}
-                aria-controls={showAllergens ? allergenId : undefined}
-                onClick={() => setShowAllergens((v) => !v)}
-              >
-                {copy.deck.allergens}
-              </button>
-            )}
-          </div>
+        <div className="card-allergens">
+          {model.allergens.length > 0 && (
+            <button
+              type="button"
+              className="card-allergen-toggle"
+              aria-expanded={showAllergens}
+              aria-controls={showAllergens ? allergenId : undefined}
+              onClick={() => setShowAllergens((v) => !v)}
+            >
+              {copy.deck.allergens}
+            </button>
+          )}
         </div>
       </div>
     </article>

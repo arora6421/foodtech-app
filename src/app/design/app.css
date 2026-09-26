@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 @import './tokens.css';
 @import './components.css';
+@import './cover.css';
 
 html {
   background: var(--color-canvas);

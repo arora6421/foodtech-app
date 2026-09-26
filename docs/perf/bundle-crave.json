@@ -1,0 +1,118 @@
+{
+  "label": "crave",
+  "mode": "production",
+  "date": "2026-09-26T18:32:32.026Z",
+  "js": {
+    "bytes": 608174,
+    "gzip": 192370,
+    "brotli": 166932
+  },
+  "initialGzip": 161663,
+  "chunks": [
+    {
+      "file": "assets/index-FaOQqOZT.js",
+      "entry": true,
+      "dynamic": false,
+      "bytes": 514640,
+      "gzip": 161663,
+      "brotli": 139456,
+      "groups": {
+        "other": 4537,
+        "react": 563265,
+        "app": 90562,
+        "motion": 110713,
+        "react-router": 82068,
+        "domain": 6541,
+        "zod": 158318,
+        "engine": 48375,
+        "zustand": 1419,
+        "catalog": 49217,
+        "location": 274
+      },
+      "imports": []
+    },
+    {
+      "file": "assets/motionFeatures-DobbLLUk.js",
+      "entry": false,
+      "dynamic": true,
+      "bytes": 93534,
+      "gzip": 30707,
+      "brotli": 27476,
+      "groups": {
+        "motion": 200616,
+        "app": 79
+      },
+      "imports": [
+        "assets/index-FaOQqOZT.js"
+      ]
+    }
+  ],
+  "groups": {
+    "other": {
+      "bytes": 1414,
+      "gzip": 838,
+      "brotli": 728
+    },
+    "app": {
+      "bytes": 50938,
+      "gzip": 16907,
+      "brotli": 14973
+    },
+    "catalog": {
+      "bytes": 39076,
+      "gzip": 11349,
+      "brotli": 10231
+    },
+    "engine": {
+      "bytes": 32167,
+      "gzip": 12092,
+      "brotli": 11075
+    },
+    "motion": {
+      "bytes": 140084,
+      "gzip": 45489,
+      "brotli": 40718
+    },
+    "react": {
+      "bytes": 256392,
+      "gzip": 80765,
+      "brotli": 70102
+    },
+    "zod": {
+      "bytes": 84987,
+      "gzip": 23930,
+      "brotli": 21176
+    },
+    "zustand": {
+      "bytes": 620,
+      "gzip": 395,
+      "brotli": 346
+    }
+  },
+  "assets": [
+    {
+      "file": "assets/InstrumentSans-Btc5I-_i.woff2",
+      "bytes": 30264
+    },
+    {
+      "file": "assets/PlayfairDisplay-Italic-gxzf92mQ.woff2",
+      "bytes": 35556
+    },
+    {
+      "file": "assets/PlayfairDisplay-Mz2CsKD5.woff2",
+      "bytes": 35480
+    },
+    {
+      "file": "assets/g-app-CCEncmwu.css",
+      "bytes": 34219
+    },
+    {
+      "file": "assets/grain-paper-SzE-9kA-.png",
+      "bytes": 14438
+    },
+    {
+      "file": "assets/grain-print-BSQ_CTqi.png",
+      "bytes": 32009
+    }
+  ]
+}

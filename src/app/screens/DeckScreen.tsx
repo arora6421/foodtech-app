@@ -95,14 +95,19 @@ export function DeckScreen() {
   const counter = counterModel(state)
 
   return (
-    <main className="screen">
+    <main className="screen deck-screen">
       <h1 className="sr-only">
         {card ? copy.deck.heading(card.offeringName, card.cardNumber ?? 0) : copy.match.title}
       </h1>
       <p className="sr-only" aria-live="polite" aria-atomic="true">
         {card && move.kind !== 'none' ? copy.deck.announce(card.cardNumber ?? 0, card.a11yLabel, counter.likely) : ''}
       </p>
-      <DeckTopBar counter={counter} canUndo={state.events.length > 0 && !finishing} onUndo={back} onDecide={decide} />
+      <DeckTopBar
+        counter={counter}
+        canUndo={state.events.length > 0 && !finishing}
+        onUndo={back}
+        onClose={() => navigate('/craving')}
+      />
       <div ref={deckRef} className="contents">
         <SwipeDeck
           card={card}
@@ -115,6 +120,7 @@ export function DeckScreen() {
         onNope={() => commit('no', 'button')}
         onYes={() => commit('yes', 'button')}
         onPick={pick}
+        onDecide={decide}
         disabled={finishing}
       />
     </main>

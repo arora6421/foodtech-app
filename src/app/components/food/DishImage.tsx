@@ -15,7 +15,7 @@ type Status = 'pending' | 'loaded' | 'failed'
 export interface DishImageProps {
   image: ResolvedImage | null
   tint: string
-  variant: 'card' | 'hero' | 'thumb' | 'mini'
+  variant: 'card' | 'hero' | 'thumb' | 'mini' | 'plate'
   /** The no-photo art for this surface (a numeral, a menu initial). */
   art: ReactNode
   /** The surrounding text already names the dish (cards, tiles): hide the image from screen readers. */
@@ -28,7 +28,8 @@ export function DishImage({ image, tint, variant, art, decorative = false, prior
   // Status belongs to one src; a new src starts pending again.
   const [loadState, setLoadState] = useState<{ src: string; status: Status } | null>(null)
   const status: Status = image && loadState?.src === image.src ? loadState.status : 'pending'
-  const showNote = image?.illustrative && status === 'loaded' && (variant === 'card' || variant === 'hero')
+  const showNote =
+    image?.illustrative && status === 'loaded' && (variant === 'card' || variant === 'hero' || variant === 'plate')
   return (
     <div
       className={`dish-media dish-media-${variant}`}
@@ -58,4 +59,13 @@ export function DishImage({ image, tint, variant, art, decorative = false, prior
 /** No-photo art: the dish's initial set large in the display italic, like a menu's drop cap. */
 export function MenuMark({ text }: { text: string }) {
   return <span className="menu-mark">{text}</span>
+}
+
+/** No-photo plate (Crave): a plate outline with the dish's initial, at the plate's size and position. */
+export function PlateArt({ initial }: { initial: string }) {
+  return (
+    <span className="plate-art">
+      <span className="plate-initial">{initial}</span>
+    </span>
+  )
 }

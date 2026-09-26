@@ -1,0 +1,626 @@
+/*
+ * "Crave" components: the printed-magazine cover look (docs/design/crave-design-handoff/).
+ * Loaded after components.css. Colours, fonts and texture strengths come from tokens.css; the
+ * per-dish cover colour arrives as --cover (design/covers.ts).
+ */
+@layer components {
+  /* ── Cover surfaces: a bold dish colour with print grain on top (cream pages stay clean) ── */
+  /* (No `position` here: the swipe card is absolutely positioned; other covers set their own.) */
+  .cover {
+    isolation: isolate;
+    background: var(--cover);
+    color: var(--color-ink);
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    background: var(--texture-print) 0 0 / 128px;
+    mix-blend-mode: multiply;
+    opacity: var(--grain-opacity);
+  }
+  .t-kicker {
+    font: 700 11px/1.2 var(--font-text);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+  .offset-print {
+    text-shadow: var(--offset-print);
+  }
+
+  /* ── The swipe card (mockups 03 and 04) ───────────────────────────────────────────────── */
+  /* Zones, top to bottom: kind + number · name (fixed height, two lines) · middle (Inside list and
+     the plate) · bottom (pills, venue, allergens: fixed height). Only the middle flexes, and the plate
+     is sized from it, so on a given phone the plate is the same size and place on every card. */
+  .dish-card.cover {
+    container-type: size;
+    padding: 20px 20px 16px;
+    box-shadow: var(--shadow-card);
+  }
+  .card-top {
+    flex: none;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding-bottom: 9px;
+    border-bottom: 2px solid var(--color-ink);
+  }
+  .card-kind {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: italic 700 16px/1.2 var(--font-display);
+  }
+  .card-no {
+    flex: none;
+    font: 900 28px/1 var(--font-display);
+    font-variant-numeric: lining-nums;
+  }
+  /* Two lines of the largest name size, plus room for the second line's descenders, which hang
+     below the 0.92 line box (Playfair's ascent + descent is 1.333em): never clipped, always clear
+     of the Inside list. Checked by src/app/design/cardTitle.test.tsx. */
+  .card-name-zone {
+    flex: none;
+    height: calc(16.2cqw * 2.05);
+    margin-top: 12px;
+  }
+  .card-name {
+    margin: 0;
+    font: 900 16.2cqw/0.92 var(--font-display);
+    letter-spacing: -0.026em;
+    text-shadow: var(--offset-print);
+    overflow-wrap: normal;
+  }
+  .card-name.name-l {
+    font-size: 13.6cqw;
+  }
+  .card-name.name-m {
+    font-size: 11.4cqw;
+  }
+  .card-name.name-s {
+    font-size: 9.6cqw;
+  }
+  .card-name.name-xs {
+    font-size: 8.2cqw;
+  }
+  .card-middle {
+    flex: 1 1 0;
+    min-height: 0;
+    position: relative;
+    container-type: size;
+    /* The plate never covers text, by construction rather than by tuning:
+       · anchored to the bottom of the middle zone and no taller than it, so it can't reach the name;
+       · it bleeds 30% of its width off the right edge, and is capped so its leftmost point stays right
+         of the Inside column (40cqw + 8px) at any height: with bleed b and a circle filling 97% of the
+         box, the leftmost point is 100cqw + 20px − (1 − b + 0.485)·plate, so
+         plate ≤ (60cqw + 12px) / 0.685 = 87.6cqw + 17.5px.
+       Every dish is checked on five phone sizes by scripts/card-layout-audit.mjs. */
+    --plate: min(calc(87.6cqw + 17px), 100cqh);
+    /* The price sticker: capped by the zone's height, and never further left than the Inside column. */
+    --sticker: min(96px, 28cqw, 60cqh);
+  }
+  .card-inside {
+    position: relative;
+    z-index: 2;
+    width: 40cqw; /* keep in step with the plate and sticker bounds above */
+  }
+  .card-inside ul {
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .card-inside li {
+    font: italic 700 16px/1.22 var(--font-display);
+  }
+  .card-plate {
+    position: absolute;
+    z-index: 1;
+    bottom: 0;
+    right: calc(var(--plate) * -0.3 - 20px); /* bleeds 30% off the card's right edge */
+    width: var(--plate);
+    height: var(--plate);
+  }
+  .card-plate::before {
+    /* halftone dots behind the plate */
+    content: '';
+    position: absolute;
+    z-index: -1;
+    left: -8%;
+    top: -10%;
+    width: 86%;
+    height: 86%;
+    border-radius: 50%;
+    background: var(--halftone);
+    opacity: var(--halftone-opacity);
+  }
+  .price-sticker {
+    position: absolute;
+    z-index: 3;
+    /* over the plate's lower-left rim, but never over the Inside column or above the zone */
+    left: max(calc(40cqw + 8px), calc(100cqw + 20px - var(--plate) * 0.7 - var(--sticker) * 0.45));
+    bottom: clamp(0px, calc(var(--plate) * 0.1), calc(100cqh - var(--sticker)));
+    width: var(--sticker);
+    height: var(--sticker);
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    font: 900 calc(var(--sticker) * 0.23) / 1 var(--font-display);
+    font-variant-numeric: lining-nums;
+    transform: rotate(-10deg);
+    box-shadow: 0 6px 14px rgba(70, 20, 0, 0.25);
+  }
+  .card-bottom {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+  }
+  /* Room for two rows of pills on every card, so one-row and two-row cards keep the same layout. */
+  .card-pills {
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-end;
+    gap: 6px;
+    min-height: calc(2 * 27px + 6px);
+    margin: 10px 0 12px;
+  }
+  .pill {
+    padding: 4px 11px;
+    border: 1.5px solid var(--color-ink);
+    border-radius: 999px;
+    font: 600 13px/1.2 var(--font-text);
+    white-space: nowrap;
+  }
+  .card-where {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 2px solid var(--color-ink);
+  }
+  .card-venue {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font: 700 16px/1.25 var(--font-text);
+  }
+  .card-distance {
+    flex: none;
+    font: 500 14px/1.25 var(--font-text);
+    font-variant-numeric: tabular-nums;
+  }
+  .card-allergens {
+    height: 22px;
+  }
+  .card-allergen-toggle {
+    min-height: 44px;
+    margin: -11px 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: 600 13px/1 var(--font-text);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .allergen-panel {
+    position: absolute;
+    z-index: 4;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: 0;
+    padding: 10px 12px;
+    border: 2px solid var(--color-ink);
+    border-radius: var(--radius-control);
+    background: var(--color-raised);
+    font: 500 14px/1.35 var(--font-text);
+  }
+
+  /* The plate itself: a cutout shown whole with a soft shadow, or the no-photo outline. */
+  .dish-media-plate {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    background: none;
+  }
+  .dish-media-plate::before {
+    display: none;
+  }
+  .dish-media-plate[data-kind='cutout'] img {
+    object-fit: contain;
+    padding: 0;
+    filter: drop-shadow(0 18px 22px rgba(70, 35, 0, 0.35));
+  }
+  .dish-media-plate[data-kind='photo'] img {
+    border-radius: 50%;
+  }
+  .plate-art {
+    position: absolute;
+    inset: 3%;
+    display: flex;
+    align-items: center;
+    padding-left: 13%; /* the initial sits in the part of the plate that's on the card (30% bleeds off) */
+    border: 2px solid var(--color-ink);
+    border-radius: 50%;
+    background: rgba(255, 246, 232, 0.4);
+    overflow: hidden;
+  }
+  .plate-initial {
+    font: italic 900 calc(var(--plate, 200px) * 0.66) / 1 var(--font-display);
+    margin-top: -8%;
+  }
+
+  /* YES / NOPE drag stamps: a red sticker and an ink stamp (a word and a shape, not colour alone). */
+  .stamp {
+    position: absolute;
+    z-index: 6;
+    top: 36%;
+    opacity: 0;
+    pointer-events: none;
+    font: 900 24px/1 var(--font-display);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  .stamp-yes {
+    right: 16px;
+    display: grid;
+    place-items: center;
+    width: 104px;
+    height: 104px;
+    border-radius: 50%;
+    background: var(--color-yes);
+    color: var(--color-on-accent);
+    transform: rotate(12deg);
+    box-shadow: 0 8px 18px rgba(70, 20, 0, 0.3);
+  }
+  .stamp-no {
+    left: 16px;
+    padding: 12px 16px;
+    border: 3px solid var(--color-no);
+    border-radius: var(--radius-control);
+    background: var(--color-raised);
+    color: var(--color-no);
+    transform: rotate(-10deg);
+    text-decoration: line-through;
+    text-decoration-thickness: 3px;
+  }
+
+  /* ── Deck chrome ───────────────────────────────────────────────────────────────────── */
+  .deck-bar {
+    display: grid;
+    grid-template-columns: 44px 1fr 44px;
+    align-items: center;
+    min-height: 48px;
+  }
+  .masthead {
+    font: italic 900 34px/1 var(--font-display);
+    letter-spacing: -0.03em;
+    text-align: center;
+  }
+  .deck-count {
+    display: block;
+    margin-top: 3px;
+    font: 700 10px/1.2 var(--font-text);
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+  }
+  .deck-votes {
+    display: flex;
+    gap: 12px;
+  }
+  .vote {
+    flex: 1 1 0;
+    min-height: 56px;
+    border: 2px solid var(--color-ink);
+    border-radius: var(--radius-control);
+    font: 900 22px/1 var(--font-display);
+    cursor: pointer;
+  }
+  .vote-no {
+    background: transparent;
+    color: var(--color-ink);
+  }
+  .vote-yes {
+    background: var(--color-ink);
+    color: var(--color-raised);
+  }
+  .deck-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0 22px;
+  }
+  .link-btn {
+    min-height: 44px;
+    padding: 0 6px;
+    border: 0;
+    background: none;
+    color: var(--color-ink);
+    font: 600 15px/1 var(--font-text);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    cursor: pointer;
+  }
+
+  /* ── Match and Alternative: a full-screen cover (mockups 05 and 06) ──────────────────── */
+  .match-cover {
+    position: relative;
+    container-type: inline-size;
+  }
+  .cover-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+  }
+  .cover-bar .masthead {
+    font-size: 32px;
+    text-align: left;
+  }
+  .cover-rule {
+    height: 2px;
+    margin: 6px 0 14px;
+    background: var(--color-ink);
+  }
+  .match-kicker {
+    margin: 0 0 8px;
+    font: 700 11px/1.2 var(--font-text);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    outline-offset: 4px;
+  }
+  .match-dish {
+    margin: 0;
+    font: 900 15.4cqi/0.92 var(--font-display);
+    letter-spacing: -0.026em;
+    text-shadow: var(--offset-print);
+  }
+  .match-dish.name-l {
+    font-size: 12.9cqi;
+  }
+  .match-dish.name-m {
+    font-size: 10.8cqi;
+  }
+  .match-dish.name-s {
+    font-size: 9.1cqi;
+  }
+  .match-dish.name-xs {
+    font-size: 7.8cqi;
+  }
+  .match-sub {
+    margin: 12px 0 0;
+    font: italic 700 18px/1.3 var(--font-display);
+  }
+  .match-plate {
+    --plate: min(226px, 58cqi);
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: var(--plate);
+    margin: 14px 0 10px;
+  }
+  .match-plate::before {
+    content: '';
+    position: absolute;
+    width: calc(var(--plate) * 1.06);
+    height: calc(var(--plate) * 1.06);
+    left: calc(50% - var(--plate) * 0.49);
+    top: -4px;
+    border-radius: 50%;
+    background: var(--halftone);
+    opacity: var(--halftone-opacity);
+  }
+  .match-plate .dish-media-plate {
+    position: relative;
+    width: var(--plate);
+    height: var(--plate);
+  }
+  .match-sticker {
+    position: absolute;
+    z-index: 3;
+    top: 4px;
+    right: max(0px, calc(50% - var(--plate) * 0.66));
+    display: grid;
+    place-items: center;
+    width: 86px;
+    height: 86px;
+    padding: 8px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+    font: 900 17px/1.05 var(--font-display);
+    text-align: center;
+    transform: rotate(12deg);
+    box-shadow: 0 6px 14px rgba(70, 20, 0, 0.25);
+  }
+  .match-headline {
+    margin: 4px 0 10px;
+    font: italic 700 16px/1.35 var(--font-display);
+  }
+  .match-why {
+    margin: 0 0 10px;
+    font: 900 24px/1.1 var(--font-display);
+  }
+  .match-reasons {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .match-reasons li {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .reason-no {
+    flex: none;
+    width: 26px;
+    font: 900 20px/1 var(--font-display);
+    font-variant-numeric: lining-nums;
+  }
+  .reason-text {
+    font: 500 15px/1.35 var(--font-text);
+  }
+  .cover-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 18px;
+  }
+  .cover-actions-row {
+    display: flex;
+    gap: 10px;
+  }
+  .cover-actions-row > * {
+    flex: 1 1 0;
+  }
+  .btn-cover-primary,
+  .btn-cover {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 2px solid var(--color-ink);
+    border-radius: var(--radius-control);
+    cursor: pointer;
+  }
+  .btn-cover-primary {
+    min-height: 54px;
+    background: var(--color-ink);
+    color: var(--color-raised);
+    font: 900 21px/1 var(--font-display);
+  }
+  .btn-cover {
+    min-height: 48px;
+    padding: 0 12px;
+    background: transparent;
+    color: var(--color-ink);
+    font: 600 15px/1.1 var(--font-text);
+  }
+  .btn-cover[aria-pressed='true'] {
+    background: var(--color-ink);
+    color: var(--color-raised);
+  }
+  .btn-cover .icon {
+    width: 18px;
+    height: 18px;
+  }
+  .or-try-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 20px 0 10px;
+  }
+  .or-try-head::after {
+    content: '';
+    flex: 1;
+    height: 1.5px;
+    background: var(--color-ink);
+  }
+  .or-try {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .or-try-tile {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 52px;
+    padding: 6px 8px;
+    border: 0;
+    border-radius: var(--radius-control);
+    background: rgba(255, 246, 232, 0.55);
+    color: var(--color-ink);
+    text-align: left;
+    cursor: pointer;
+  }
+  .or-try-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .or-try-label {
+    font: 700 9px/1.3 var(--font-text);
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .or-try-name {
+    font: 700 14px/1.2 var(--font-text);
+  }
+  .or-try-meta {
+    font: 500 12px/1.3 var(--font-text);
+    font-variant-numeric: tabular-nums;
+  }
+  .also-at {
+    margin: 12px 0 0;
+    font: 500 13px/1.35 var(--font-text);
+  }
+  .cover-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0 22px;
+    margin-top: 10px;
+  }
+
+  /* ── Narrow screens (under 300px: a phone at 200% zoom) ────────────────────────────── */
+  /* Readable text beats the fixed layout: everything wraps, the plate (decorative) steps aside so
+     it can never cover text, the price becomes an inline sticker, and the card scrolls if it must. */
+  @media (max-width: 300px) {
+    .swipe-card .dish-card.cover {
+      overflow-y: auto;
+    }
+    .dish-card .card-name-zone {
+      height: auto;
+    }
+    .dish-card .card-kind,
+    .dish-card .card-venue {
+      white-space: normal;
+      overflow: visible;
+    }
+    .dish-card .card-where {
+      flex-wrap: wrap;
+    }
+    .dish-card .card-inside {
+      width: auto;
+    }
+    .dish-card .card-middle {
+      flex: none;
+      container-type: normal;
+    }
+    .dish-card .card-plate {
+      display: none;
+    }
+    .dish-card .price-sticker {
+      position: static;
+      margin: 12px 0 0;
+      width: 84px;
+      height: 84px;
+      font-size: 19px;
+    }
+    .dish-card .card-pills {
+      min-height: 0;
+    }
+    .or-try {
+      grid-template-columns: 1fr;
+    }
+    .cover-actions-row {
+      flex-wrap: wrap;
+    }
+  }
+}

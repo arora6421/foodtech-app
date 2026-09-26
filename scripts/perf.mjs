@@ -178,7 +178,7 @@ async function run(browser) {
     return performance.now()
   })
   await page.locator('::-p-text(Decide for me)').click()
-  await page.waitForSelector('.receipt')
+  await page.waitForSelector('.match-kicker')
   await sleep(1200)
   const reveal = await page.evaluate(
     (since) => ({ frames: window.__frames.stop(), long: window.__perf.longTasks.filter((t) => t.start >= since) }),

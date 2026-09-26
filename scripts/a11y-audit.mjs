@@ -54,10 +54,24 @@ const LAYOUT_CHECKS = () => {
     out.reflow = `page scrolls sideways: ${doc.scrollWidth}px wide in a ${innerWidth}px viewport`
   // The app clips horizontal overflow (so a flung card can't widen the page), which also hides
   // real reflow failures from scrollWidth. So: anything visible that extends past the screen edge.
+  // What's actually visible: an element's box cut down by every ancestor that clips its overflow
+  // (e.g. the deck card clips the plate that deliberately bleeds off its edge).
+  const visibleRect = (el) => {
+    let { left, right } = el.getBoundingClientRect()
+    for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+      if (/hidden|clip|auto|scroll/.test(getComputedStyle(a).overflowX)) {
+        const b = a.getBoundingClientRect()
+        left = Math.max(left, b.left)
+        right = Math.min(right, b.right)
+      }
+    }
+    return { left, right }
+  }
   const past = []
   for (const el of document.querySelectorAll('main *, [role="dialog"] *')) {
     if (!visible(el) || el.closest('.swipe-card[inert], .deck-edge, .dish-media')) continue
-    const r = el.getBoundingClientRect()
+    const r = visibleRect(el)
+    if (r.right <= r.left) continue // clipped away entirely
     if (r.right > innerWidth + 1 || r.left < -1)
       past.push(`${describe(el)} spans ${Math.round(r.left)}–${Math.round(r.right)}px`)
   }
@@ -86,7 +100,7 @@ const LAYOUT_CHECKS = () => {
     // Horizontal: text that actually extends past the box (decorative layers like stamps don't count).
     const box = el.getBoundingClientRect()
     const textPast = [...el.querySelectorAll('*')].some((d) => {
-      if (d.closest('.stamp, .dish-media, .sr-only') || !d.textContent.trim()) return false
+      if (d.closest('.stamp, .dish-media, .card-plate, .sr-only') || !d.textContent.trim()) return false
       const r = d.getBoundingClientRect()
       return r.width > 0 && (r.right > box.right + 1 || r.left < box.left - 1)
     })
@@ -218,32 +232,32 @@ async function walk(browser, vp) {
   })
   await step('Match', async () => {
     await click('Decide for me')
-    await page.waitForSelector('.receipt')
+    await page.waitForSelector('.match-kicker')
     results.push(await audit(page, 'Match'))
   })
   await step('Match › hand-off sheet', async () => {
-    await (await page.$('main .btn-primary')).click()
+    await (await page.$('main .btn-cover-primary')).click()
     await page.waitForSelector('[role="dialog"]')
     results.push(await audit(page, 'Match › hand-off sheet'))
     await page.keyboard.press('Escape')
     await page.waitForFunction(() => !document.querySelector('[role="dialog"]'))
   })
   await step('Match › Alternative', async () => {
-    await (await page.$('.alt-tile')).click()
+    await (await page.$('.or-try-tile')).click()
     await page.waitForSelector('::-p-text(Choose this instead)')
     results.push(await audit(page, 'Match › Alternative'))
     await click('Return to our match')
     await page.waitForSelector('::-p-text(Show me something else)')
   })
   await step('Saved', async () => {
-    await (await page.$('button[aria-label="Save"]')).click()
+    await (await page.$('.cover-actions-row button:last-child')).click()
     await go('/saved')
     await page.waitForSelector('main li button')
     results.push(await audit(page, 'Saved'))
   })
   await step('Saved › detail', async () => {
     await (await page.$('main li button')).click()
-    await page.waitForSelector('.receipt')
+    await page.waitForSelector('main h1')
     results.push(await audit(page, 'Saved › detail'))
   })
   await ctx.close()

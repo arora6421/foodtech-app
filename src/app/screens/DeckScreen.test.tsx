@@ -109,23 +109,23 @@ describe('DeckScreen', () => {
     await waitFor(() => expect(document.querySelector('[aria-live="polite"]')!.textContent).toMatch(/^Card 2\. /))
   })
 
-  it('gives every card the same layout: the frame is always there, with no-photo art when there is no photo', async () => {
+  it('gives every card the same layout: the plate is always there, drawn as an outline when there is no photo', async () => {
     const user = userEvent.setup()
     renderDeck()
     const structure = () =>
       [...topCard().children].map((c) => c.className).filter((c) => c && !c.includes('stamp') && c !== 'sr-only')
     const first = structure()
-    expect(first).toEqual(['card-head', 'card-title', 'card-frame-slot', 'card-details'])
-    const frame = topCard().querySelector<HTMLElement>('.dish-media-card')!
+    expect(first).toEqual(['card-top', 'card-name-zone', 'card-middle', 'card-bottom'])
+    const frame = topCard().querySelector<HTMLElement>('.dish-media-plate')!
     expect(frame.dataset.state).toBe('none')
-    expect(frame.querySelector('.menu-mark')!.textContent).toBe('1')
+    expect(frame.querySelector('.plate-initial')!.textContent).toMatch(/^\S$/)
     for (let i = 0; i < 4; i++) {
       await user.click(screen.getByRole('button', { name: 'Nope' }))
       await waitFor(() => expect(structure()).toEqual(first))
     }
   })
 
-  it('opens listed allergens inside the frame slot, so the card keeps its height', async () => {
+  it('opens listed allergens over the plate area, so the card keeps its height', async () => {
     const user = userEvent.setup()
     const model = {
       ...currentCard(
@@ -141,7 +141,7 @@ describe('DeckScreen', () => {
     await user.click(screen.getByRole('button', { name: 'Listed allergens' }))
     const panel = card.querySelector('.allergen-panel')!
     expect(panel.textContent).toBe('sesame, milk')
-    expect(panel.parentElement!.className).toBe('card-frame-slot')
+    expect(panel.parentElement!.className).toBe('card-middle')
     expect(card.children.length).toBe(rows)
     expect(screen.getByRole('button', { name: 'Listed allergens' }).getAttribute('aria-controls')).toBe(panel.id)
   })

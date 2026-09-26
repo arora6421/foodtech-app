@@ -3,7 +3,7 @@ import type { Budget, DietConstraint, Fulfilment, Mood } from '../../domain'
 // Every user-facing string (m1-spec §2.1). UK English, sentence case, plain.
 // The product name is a neutral placeholder in ONE place and is not part of the design system.
 
-export const PRODUCT_NAME = 'working title'
+export const PRODUCT_NAME = 'Crave'
 
 export const copy = {
   welcome: {
@@ -62,6 +62,7 @@ export const copy = {
   },
   deck: {
     undo: 'Undo',
+    close: 'Close',
     decide: 'Decide for me',
     left: 'left',
     nope: 'Nope',
@@ -72,15 +73,18 @@ export const copy = {
     announce: (n: number, label: string, left: number) => `Card ${n}. ${label} ${left} dishes left.`,
     spice: (n: number, word: string) => `Spice ${n} of 4, ${word.toLowerCase()}`,
     allergens: 'Listed allergens',
+    inside: 'Inside',
   },
   match: {
     title: 'Match found',
+    kicker: 'Tonight’s cover',
+    at: (venue: string, price: string, distance: string) => `at ${venue} · ${price} · ${distance}`,
     why: 'Why this one',
     orTry: 'Or try',
     ourMatch: 'Our match',
     alsoAt: 'Also at',
     order: 'Order',
-    directions: 'Directions',
+    directions: 'Get directions',
     save: 'Save',
     saved: 'Saved',
     somethingElse: 'Show me something else',

@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import type { CSSProperties } from 'react'
 import { m, useReducedMotion } from 'motion/react'
 import { Navigate, useNavigate } from 'react-router'
-import { copy } from '../copy/en-GB'
+import { copy, PRODUCT_NAME } from '../copy/en-GB'
+import { coverFor } from '../design/covers'
 import { MOTION } from '../design/motion'
+import { nameTier } from '../design/nameFit'
 import { DishTile } from '../components/food/DishCard'
-import { DishImage, MenuMark } from '../components/food/DishImage'
+import { DishImage, MenuMark, PlateArt } from '../components/food/DishImage'
 import { DirectionsSheet, OrderSheet } from '../components/handoff/HandoffSheets'
 import { Icon } from '../components/primitives/Icon'
 import { track } from '../services/analytics'
@@ -17,10 +19,11 @@ import type { MatchModel } from '../state/viewModels'
 // S4 Match Found (MVP_SPEC §4) plus the approved runner-up inspection state ("Alternative"):
 // inspecting an alternative is UI-only, is labelled as such, and never offers "Show me something else".
 //
-// The payoff: the swiped card's colour carries into the ticket, which rises, gets its confidence
-// stamped on, then ticks off the engine's own reasons (≤ 900 ms, m1-spec §2 MatchReveal). It plays
-// once on arrival; switching between our match and an alternative is a quick crossfade.
-// Reduced motion: a single short fade.
+// The payoff is a full-screen magazine cover in the dish's colour ("Crave", mockups 05 and 06): the
+// dish as the cover story, its plate with the confidence sticker, and the engine's own reasons,
+// numbered. It rises, the sticker is slapped on, the reasons tick in (≤ 900 ms, m1-spec §2
+// MatchReveal); once on arrival, then switching between our match and an alternative crossfades.
+// Reduced motion: a single short fade. Every word about the dish comes from real data.
 
 const sec = (ms: number) => ms / 1000
 
@@ -60,54 +63,48 @@ function revealFor(entrance: Entrance) {
   }
 }
 
-function MatchTicket({ model, entrance, onLanded }: { model: MatchModel; entrance: Entrance; onLanded: () => void }) {
+function MatchCover({ model, entrance, onLanded }: { model: MatchModel; entrance: Entrance; onLanded: () => void }) {
   const [reveal] = useState(() => revealFor(entrance))
   const hero = model.hero
+  const isMatch = model.mode === 'match'
   return (
-    <m.section className="receipt" aria-labelledby="match-dish" {...reveal.ticket} onAnimationComplete={onLanded}>
-      {hero.image && (
-        <DishImage variant="hero" image={hero.image} tint={hero.tint} art={<MenuMark text={hero.initial} />} priority />
-      )}
-      <div className="receipt-plate tinted" style={{ '--tint': hero.tint } as CSSProperties}>
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <span className="t-label">{hero.cuisineLabel}</span>
-          <m.span className="badge" {...reveal.stamp}>
-            {model.mode === 'match' ? model.confidenceLabel : copy.match.altLabel}
+    <m.section className="match-story" aria-labelledby="match-dish" {...reveal.ticket} onAnimationComplete={onLanded}>
+      <h2 id="match-dish" className={`match-dish name-${nameTier(hero.archetypeName)}`}>
+        {hero.archetypeName}
+      </h2>
+      <p className="match-sub">{copy.match.at(hero.venueName, hero.priceLabel, hero.distanceLabel)}</p>
+      <div className="match-plate">
+        <DishImage
+          variant="plate"
+          image={hero.image}
+          tint={hero.tint}
+          art={<PlateArt initial={hero.initial} />}
+          priority
+        />
+        {isMatch && (
+          <m.span className="match-sticker" {...reveal.stamp}>
+            {model.confidenceLabel}
           </m.span>
-        </div>
-        <h2 id="match-dish" className="t-display-xl" style={{ margin: '14px 0 0' }}>
-          {hero.archetypeName}
-        </h2>
+        )}
       </div>
-      <div className="price-line flex items-baseline gap-2">
-        <span className="t-body dot-list">
-          {hero.showArchetype && <span>{hero.offeringName}</span>}
-          <span>{hero.venueName}</span>
-        </span>
-        <span className="leader" />
-        <span className="t-price">{hero.priceLabel}</span>
-      </div>
-      <p className="t-caption dot-list" style={{ margin: '2px 0 0' }}>
-        <span>{hero.timeLabel}</span>
-        <span>{hero.distanceLabel}</span>
-      </p>
       {model.headline && (
-        <m.p className="t-lead" style={{ margin: '10px 0 4px' }} {...reveal.line(0)}>
+        <m.p className="match-headline" {...reveal.line(0)}>
           {model.headline}
         </m.p>
       )}
       {model.reasons.length > 0 && (
         <>
-          <h3 className="t-section" style={{ margin: '10px 0 2px' }}>
-            {model.mode === 'match' ? copy.match.why : copy.match.altWhy}
-          </h3>
-          <ul className="reasons">
+          <h3 className={isMatch ? 'sr-only' : 'match-why'}>{isMatch ? copy.match.why : copy.match.altWhy}</h3>
+          <ol className="match-reasons">
             {model.reasons.map((r, i) => (
               <m.li key={r.text} data-kind={r.kind} {...reveal.line(i + 1)}>
-                {r.text}
+                <span className="reason-no" aria-hidden="true">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span className="reason-text">{r.text}</span>
               </m.li>
             ))}
-          </ul>
+          </ol>
         </>
       )}
     </m.section>
@@ -179,15 +176,24 @@ export function MatchScreen() {
   const primary = model.primaryAction
   const secondary = primary === 'order' ? 'directions' : 'order'
 
+  const kicker = showPickList ? copy.match.pickTitle : model.mode === 'match' ? copy.match.kicker : copy.match.altLabel
+
   return (
-    <main className="screen">
-      <h1
-        ref={headingRef}
-        tabIndex={-1}
-        className="t-lead"
-        style={{ fontSize: 30, lineHeight: 1, margin: '8px 0 12px', outlineOffset: 4 }}
-      >
-        {showPickList ? copy.match.pickTitle : copy.match.title}
+    <main
+      className={showPickList ? 'screen' : 'screen match-cover cover'}
+      style={showPickList ? undefined : ({ '--cover': coverFor(hero.tint) } as CSSProperties)}
+    >
+      <div className="cover-bar">
+        <span className="masthead" aria-hidden="true">
+          {PRODUCT_NAME}
+        </span>
+        <button type="button" className="icon-btn" aria-label={copy.deck.close} onClick={() => navigate('/')}>
+          <Icon name="close" />
+        </button>
+      </div>
+      <div className="cover-rule" />
+      <h1 ref={headingRef} tabIndex={-1} className="match-kicker">
+        {kicker}
       </h1>
 
       {showPickList ? (
@@ -202,123 +208,126 @@ export function MatchScreen() {
           </div>
         </>
       ) : (
+        <MatchCover
+          key={`${model.mode}:${hero.archetypeId}`}
+          model={model}
+          entrance={reduced ? 'reduced' : landed ? 'switch' : 'full'}
+          onLanded={() => setLanded(true)}
+        />
+      )}
+
+      <m.div className="cover-actions" {...actionsReveal}>
+        {inspecting ? (
+          <>
+            <button type="button" className="btn-cover-primary" onClick={chooseAlternative}>
+              {copy.match.altChoose}
+            </button>
+            <button type="button" className="btn-cover" onClick={returnToMatch}>
+              {returnLabel}
+            </button>
+          </>
+        ) : (
+          !showPickList && (
+            <>
+              <button type="button" className="btn-cover-primary" onClick={() => openSheet(primary)}>
+                {primary === 'order' ? copy.match.order : copy.match.directions}
+              </button>
+              <div className="cover-actions-row">
+                <button type="button" className="btn-cover" onClick={() => openSheet(secondary)}>
+                  {secondary === 'order' ? copy.match.order : copy.match.directions}
+                </button>
+                <button
+                  type="button"
+                  className="btn-cover"
+                  aria-pressed={!!savedEntry}
+                  title={savedEntry ? copy.match.saved : undefined}
+                  onClick={toggleSave}
+                >
+                  <Icon name="bookmark" filled={!!savedEntry} />
+                  {copy.match.save}
+                </button>
+              </div>
+            </>
+          )
+        )}
+      </m.div>
+
+      {!showPickList && model.alternatives.length > 0 && (
         <>
-          <MatchTicket
-            key={`${model.mode}:${hero.archetypeId}`}
-            model={model}
-            entrance={reduced ? 'reduced' : landed ? 'switch' : 'full'}
-            onLanded={() => setLanded(true)}
-          />
-
-          {model.alsoAt.length > 0 && (
-            <p className="t-caption" style={{ margin: '14px 0 0' }}>
-              {copy.match.alsoAt}{' '}
-              <span className="dot-list">
-                {model.alsoAt.map((a) => (
-                  <span key={a.venueName}>
-                    {a.venueName} ({a.priceLabel})
-                  </span>
-                ))}
-              </span>
-            </p>
-          )}
-
-          {model.alternatives.length > 0 && (
-            <div className="alt-tiles" style={{ marginTop: 10 }}>
-              {model.alternatives.map((alt) => {
-                const isEngineHero = alt.archetypeId === state.result!.hero.archetypeId
-                return (
-                  <button
-                    key={alt.key}
-                    type="button"
-                    className="alt-tile"
-                    onClick={() =>
-                      isEngineHero && !pickListSession
-                        ? returnToMatch()
-                        : viewAlternative(alt.archetypeId, isEngineHero)
-                    }
-                  >
-                    <DishImage
-                      variant="mini"
-                      image={alt.image}
-                      tint={alt.tint}
-                      art={<MenuMark text={alt.initial} />}
-                      decorative
-                    />
-                    <span>
-                      <small>
-                        {isEngineHero
-                          ? pickListSession
-                            ? copy.match.pickListTop
-                            : copy.match.ourMatch
-                          : copy.match.orTry}
+          <p className="or-try-head t-kicker">{copy.match.orTry}</p>
+          <div className="or-try">
+            {model.alternatives.map((alt) => {
+              const isEngineHero = alt.archetypeId === state.result!.hero.archetypeId
+              return (
+                <button
+                  key={alt.key}
+                  type="button"
+                  className="or-try-tile"
+                  onClick={() =>
+                    isEngineHero && !pickListSession ? returnToMatch() : viewAlternative(alt.archetypeId, isEngineHero)
+                  }
+                >
+                  <DishImage
+                    variant="mini"
+                    image={alt.image}
+                    tint={alt.tint}
+                    art={<MenuMark text={alt.initial} />}
+                    decorative
+                  />
+                  <span className="or-try-text">
+                    {isEngineHero && (
+                      <small className="or-try-label">
+                        {pickListSession ? copy.match.pickListTop : copy.match.ourMatch}
                       </small>
-                      {alt.archetypeName}
+                    )}
+                    <span className="or-try-name">{alt.archetypeName}</span>
+                    <span className="or-try-meta">
+                      {alt.priceLabel} · {alt.distanceLabel}
                     </span>
-                  </button>
-                )
-              })}
-            </div>
-          )}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
         </>
       )}
 
-      <m.div style={{ marginTop: 'auto', paddingTop: 14 }} {...actionsReveal}>
-        {inspecting ? (
-          <div className="flex flex-col gap-2.5">
-            <button type="button" className="btn btn-primary" onClick={chooseAlternative}>
-              {copy.match.altChoose}
-            </button>
-            <button type="button" className="btn btn-secondary" onClick={returnToMatch}>
-              {returnLabel}
-            </button>
-          </div>
-        ) : (
-          !showPickList && (
-            <div className="match-actions">
-              <button type="button" className="btn btn-primary" onClick={() => openSheet(primary)}>
-                {primary === 'order' ? copy.match.order : copy.match.directions}
-              </button>
-              <button type="button" className="btn btn-secondary" onClick={() => openSheet(secondary)}>
-                {secondary === 'order' ? copy.match.order : copy.match.directions}
-              </button>
-              <button
-                type="button"
-                className="btn btn-secondary btn-icon"
-                aria-label={copy.match.save}
-                title={savedEntry ? copy.match.saved : copy.match.save}
-                aria-pressed={!!savedEntry}
-                onClick={toggleSave}
-              >
-                <Icon name="bookmark" filled={!!savedEntry} />
-              </button>
-            </div>
-          )
-        )}
-        <div className="flex flex-wrap justify-center gap-x-4">
-          {model.mode === 'match' && !showPickList && (
-            <button type="button" className="btn btn-tertiary" onClick={notQuite}>
-              {copy.match.somethingElse}
-            </button>
-          )}
-          {model.mode === 'chosen-alternative' && (
-            <button type="button" className="btn btn-tertiary" onClick={returnToMatch}>
-              {returnLabel}
-            </button>
-          )}
-          <button
-            type="button"
-            className="btn btn-tertiary"
-            onClick={() => {
-              track('match_action', { action: 'start_over' })
-              reset()
-              navigate('/craving')
-            }}
-          >
-            {copy.match.startAgain}
+      {!showPickList && model.alsoAt.length > 0 && (
+        <p className="also-at">
+          {copy.match.alsoAt}{' '}
+          <span className="dot-list">
+            {model.alsoAt.map((a) => (
+              <span key={a.venueName}>
+                {a.venueName} ({a.priceLabel})
+              </span>
+            ))}
+          </span>
+        </p>
+      )}
+
+      <div className="cover-links">
+        {model.mode === 'match' && !showPickList && (
+          <button type="button" className="link-btn" onClick={notQuite}>
+            {copy.match.somethingElse}
           </button>
-        </div>
-      </m.div>
+        )}
+        {model.mode === 'chosen-alternative' && (
+          <button type="button" className="link-btn" onClick={returnToMatch}>
+            {returnLabel}
+          </button>
+        )}
+        <button
+          type="button"
+          className="link-btn"
+          onClick={() => {
+            track('match_action', { action: 'start_over' })
+            reset()
+            navigate('/craving')
+          }}
+        >
+          {copy.match.startAgain}
+        </button>
+      </div>
 
       <OrderSheet
         open={sheet === 'order'}

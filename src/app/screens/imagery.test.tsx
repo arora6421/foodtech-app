@@ -77,7 +77,7 @@ describe('imagery never blocks the decision', () => {
     renderAt('/deck')
     fireEvent.error(topCard().querySelector('img')!)
     expect(topCard().querySelector('.dish-media')!.getAttribute('data-state')).toBe('failed')
-    expect(topCard().querySelector('.menu-mark')!.textContent).toBe('1')
+    expect(topCard().querySelector('.plate-initial')!.textContent).toMatch(/^\S$/) // the no-photo plate, same place
     await user.click(screen.getByRole('button', { name: 'Nope' }))
     expect(soloSessionStore.getState().state!.events).toHaveLength(1)
   })
@@ -97,7 +97,7 @@ describe('imagery never blocks the decision', () => {
     for (let i = 0; i < 20 && !soloSessionStore.getState().state!.result; i++)
       soloSessionStore.getState().swipe(i % 3 ? 'no' : 'yes')
     renderAt('/match')
-    const hero = document.querySelector<HTMLElement>('.dish-media-hero')!
+    const hero = document.querySelector<HTMLElement>('.match-plate .dish-media-plate')!
     expect(hero.getAttribute('data-state')).toBe('pending')
     expect(hero.querySelector('img')!.getAttribute('alt')).toMatch(/Illustrative image, not from /)
     expect(screen.getByRole('heading', { level: 2 })).toBeTruthy()

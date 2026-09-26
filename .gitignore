@@ -9,3 +9,7 @@ sim-output
 src/app/debug/review-images/
 # Worktree used to build older commits for comparison
 .compare/
+
+# Crave design handoff: the brief and mockup HTML are tracked; the designer's mockup images and the zip are not
+docs/design/crave-design-handoff/mockups/images/
+docs/design/crave-design-handoff.zip
