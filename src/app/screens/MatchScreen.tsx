@@ -6,7 +6,7 @@ import { copy, PRODUCT_NAME } from '../copy/en-GB'
 import { coverFor } from '../design/covers'
 import { MOTION } from '../design/motion'
 import { nameTier } from '../design/nameFit'
-import { DishTile } from '../components/food/DishCard'
+import { IssueTile } from '../components/food/IssueTile'
 import { DishImage, MenuMark, PlateArt } from '../components/food/DishImage'
 import { DirectionsSheet, OrderSheet } from '../components/handoff/HandoffSheets'
 import { Icon } from '../components/primitives/Icon'
@@ -180,7 +180,7 @@ export function MatchScreen() {
 
   return (
     <main
-      className={showPickList ? 'screen' : 'screen match-cover cover'}
+      className={showPickList ? 'screen match-cover pick-page' : 'screen match-cover cover'}
       style={showPickList ? undefined : ({ '--cover': coverFor(hero.tint) } as CSSProperties)}
     >
       <div className="cover-bar">
@@ -198,14 +198,20 @@ export function MatchScreen() {
 
       {showPickList ? (
         <>
-          <p className="t-body muted" style={{ margin: '0 0 12px' }}>
-            {copy.match.pickBody}
-          </p>
-          <div className="flex flex-col gap-2">
+          <p className="contents-sub">{copy.match.pickBody}</p>
+          <ul className="issue-grid">
             {model.pickList!.map((d) => (
-              <DishTile key={d.key} model={d} onClick={() => viewAlternative(d.archetypeId, true)} />
+              <li key={d.key}>
+                <IssueTile
+                  model={d}
+                  kicker={d.kind}
+                  detail={d.venueName}
+                  meta={d.priceLabel}
+                  onOpen={() => viewAlternative(d.archetypeId, true)}
+                />
+              </li>
             ))}
-          </div>
+          </ul>
         </>
       ) : (
         <MatchCover

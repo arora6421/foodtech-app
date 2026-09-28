@@ -10,9 +10,11 @@ import { FILTERS_TOO_TIGHT } from '../services/engineAdapter'
 import { useSettings } from '../state/settingsStore'
 import { useSolo } from '../state/soloSessionStore'
 
-// S2 Craving & settings (MVP_SPEC §4). Up to two moods (a third replaces the oldest); "No idea" clears
-// the moods; settings are remembered. The dish count updates live, so filters that are too tight
-// show up before the user starts.
+// S2 Craving & settings (MVP_SPEC §4), styled as a magazine contents page ("Crave", mockup 02): the
+// seven moods and the two intents numbered 01–09, chosen rows marked "Tonight". Up to two moods
+// (a third replaces the oldest); "I have no idea" clears the moods; settings (Diet, Budget, Eating)
+// are remembered. The dish count updates live, so filters that are too tight show up before the
+// user starts.
 
 type SheetKind = 'diet' | 'budget' | 'eating' | null
 
@@ -55,82 +57,84 @@ export function CravingScreen() {
 
   const dietLabel = diet.length === 0 ? copy.diet.none : diet.map((d) => copy.diet[d]).join(', ')
 
+  const rows: { key: string; label: string; pressed: boolean; onClick: () => void }[] = [
+    ...MOODS.map((m) => ({ key: m, label: copy.moods[m], pressed: moods.includes(m), onClick: () => toggleMood(m) })),
+    {
+      key: 'something_new',
+      label: copy.craving.somethingNew,
+      pressed: intent === 'something_new',
+      onClick: () => toggleIntent('something_new'),
+    },
+    {
+      key: 'no_idea',
+      label: copy.craving.noIdea,
+      pressed: intent === 'no_idea',
+      onClick: () => toggleIntent('no_idea'),
+    },
+  ]
+
   return (
-    <main className="screen">
-      <div className="flex min-h-11 items-center justify-between">
-        <button type="button" className="icon-btn t-label" onClick={() => navigate('/')}>
+    <main className="screen contents-page">
+      <div className="contents-bar">
+        <button type="button" className="icon-btn" aria-label={copy.craving.back} onClick={() => navigate('/')}>
           <Icon name="back" />
-          {copy.craving.back}
         </button>
-        <span className="t-label muted">{copy.craving.step}</span>
+        <span className="t-kicker" aria-hidden="true">
+          {copy.craving.contents}
+        </span>
+        <span className="contents-bar-spacer" />
       </div>
-      <h1 className="t-title" style={{ margin: '10px 0 6px' }}>
-        {copy.craving.title} <em>{copy.craving.titleEmphasis}</em>
-      </h1>
-      <p className="t-body muted" style={{ margin: '0 0 12px' }}>
-        {copy.craving.body}
-      </p>
-      <ul className="tick-list">
-        {MOODS.map((m) => (
-          <li key={m}>
-            <button type="button" className="tick-row" aria-pressed={moods.includes(m)} onClick={() => toggleMood(m)}>
-              <span className="tick-box" aria-hidden="true">
-                {moods.includes(m) ? '✓' : ''}
+      <h1 className="contents-title">{copy.craving.title}</h1>
+      <p className="contents-sub">{copy.craving.body}</p>
+      <ol className="contents-list">
+        {rows.map((r, i) => (
+          <li key={r.key}>
+            <button type="button" className="contents-row" aria-pressed={r.pressed} onClick={r.onClick}>
+              <span className="contents-no" aria-hidden="true">
+                {String(i + 1).padStart(2, '0')}
               </span>
-              {copy.moods[m]}
+              <span className="contents-label">{r.label}</span>
+              {r.pressed && (
+                <span className="tonight-sticker" aria-hidden="true">
+                  {copy.craving.tonight}
+                </span>
+              )}
             </button>
           </li>
         ))}
-      </ul>
-      <p className="t-lead muted" style={{ textAlign: 'center', margin: '8px 0 0', fontSize: 15 }}>
-        {copy.craving.or}
-      </p>
-      <div className="flex justify-around">
-        <button
-          type="button"
-          className="text-toggle"
-          aria-pressed={intent === 'something_new'}
-          onClick={() => toggleIntent('something_new')}
-        >
-          {copy.craving.somethingNew}
-        </button>
-        <button
-          type="button"
-          className="text-toggle"
-          aria-pressed={intent === 'no_idea'}
-          onClick={() => toggleIntent('no_idea')}
-        >
-          {copy.craving.noIdea}
-        </button>
-      </div>
+      </ol>
 
-      <div style={{ marginTop: 'auto', paddingTop: 12 }}>
+      <h2 className="t-kicker contents-filters-head">{copy.craving.filters}</h2>
+      <div className="contents-filters">
         <button
           type="button"
-          className="settings-row"
+          className="filter-row"
           aria-label={`${copy.craving.diet}: ${dietLabel}`}
           onClick={() => setSheet('diet')}
         >
-          {copy.craving.diet}
+          <span>{copy.craving.diet}</span>
           <b>{dietLabel}</b>
+          <Icon name="chevron" />
         </button>
         <button
           type="button"
-          className="settings-row"
+          className="filter-row"
           aria-label={`${copy.craving.budget}: ${copy.budget[budget]}`}
           onClick={() => setSheet('budget')}
         >
-          {copy.craving.budget}
+          <span>{copy.craving.budget}</span>
           <b>{copy.budget[budget]}</b>
+          <Icon name="chevron" />
         </button>
         <button
           type="button"
-          className="settings-row"
+          className="filter-row"
           aria-label={`${copy.craving.eating}: ${copy.fulfilment[fulfilment]}`}
           onClick={() => setSheet('eating')}
         >
-          {copy.craving.eating}
+          <span>{copy.craving.eating}</span>
           <b>{copy.fulfilment[fulfilment]}</b>
+          <Icon name="chevron" />
         </button>
       </div>
 
@@ -146,8 +150,7 @@ export function CravingScreen() {
       )}
       <button
         type="button"
-        className="btn btn-primary"
-        style={{ marginTop: 12 }}
+        className="btn-cover-primary contents-go"
         onClick={go}
         disabled={status !== 'ready' || count === 0}
       >
@@ -166,7 +169,7 @@ export function CravingScreen() {
         />
         <button
           type="button"
-          className="btn btn-primary w-full"
+          className="btn-cover-primary w-full"
           style={{ marginTop: 16 }}
           onClick={() => setSheet(null)}
         >
@@ -182,7 +185,7 @@ export function CravingScreen() {
         />
         <button
           type="button"
-          className="btn btn-primary w-full"
+          className="btn-cover-primary w-full"
           style={{ marginTop: 16 }}
           onClick={() => setSheet(null)}
         >
@@ -198,7 +201,7 @@ export function CravingScreen() {
         />
         <button
           type="button"
-          className="btn btn-primary w-full"
+          className="btn-cover-primary w-full"
           style={{ marginTop: 16 }}
           onClick={() => setSheet(null)}
         >

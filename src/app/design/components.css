@@ -1,6 +1,7 @@
 /*
- * Component styles for Direction A, written against the semantic tokens in tokens.css.
- * Class names describe ROLES (t-title, btn-primary, dish-card), not looks, so another direction can restyle them.
+ * Base component styles (app shell, type roles, icons, the swipe stack, dish imagery, sheets),
+ * written against the semantic tokens in tokens.css. The "Crave" cover look is in cover.css.
+ * Class names describe ROLES (t-body, sheet, dish-card), not looks, so another direction can restyle them.
  */
 @layer components {
   /* ── App shell ─────────────────────────────────────────────── */
@@ -31,132 +32,14 @@
   }
 
   /* ── Type roles ────────────────────────────────────────────── */
-  .t-display-xl {
-    font: italic 500 46px/0.95 var(--font-display);
-    /* 46px on a phone; smaller only when the screen is very narrow (e.g. 200% zoom), so a long
-       word like "shawarma" still fits its box (WCAG 1.4.10). */
-    font-size: clamp(28px, 13vw, 46px);
-    font-variation-settings:
-      'SOFT' 100,
-      'WONK' 1,
-      'opsz' 144;
-    letter-spacing: -0.02em;
-  }
-  .t-display-l {
-    font: 500 36px/1.02 var(--font-display);
-    font-variation-settings:
-      'SOFT' 30,
-      'opsz' 144;
-    letter-spacing: -0.015em;
-  }
-  .t-title {
-    font: 400 32px/1.05 var(--font-display);
-    font-variation-settings:
-      'SOFT' 50,
-      'opsz' 72;
-    letter-spacing: -0.01em;
-  }
-  .t-title em {
-    font-style: italic;
-    font-variation-settings:
-      'SOFT' 100,
-      'WONK' 1,
-      'opsz' 72;
-    color: var(--color-accent);
-  }
-  .t-lead {
-    font: italic 400 17px/1.3 var(--font-display);
-  }
   .t-body {
     font: 400 15px/1.45 var(--font-text);
-  }
-  .t-label {
-    font: 600 12px/1.2 var(--font-text);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-  .t-caption {
-    font: 500 13px/1.3 var(--font-text);
-    color: var(--color-ink-muted);
-    font-variant-numeric: tabular-nums;
-  }
-  .t-price {
-    font: 600 18px/1 var(--font-display);
-    font-variant-numeric: tabular-nums;
-  }
-  .t-section {
-    font: 600 11px/1.2 var(--font-text);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--color-ink-muted);
-  }
-  .wordmark {
-    font: italic 600 17px/1 var(--font-display);
-    font-variation-settings:
-      'SOFT' 100,
-      'WONK' 1;
   }
   .muted {
     color: var(--color-ink-muted);
   }
 
-  /* ── Buttons ───────────────────────────────────────────────── */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 48px;
-    padding: 0 18px;
-    border: 0;
-    cursor: pointer;
-    font: 600 13px/1 var(--font-text);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    border-radius: var(--radius-control);
-    text-decoration: none;
-    background: none;
-    color: inherit;
-  }
-  .btn-primary {
-    background: var(--color-ink);
-    color: var(--color-raised);
-    box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.35);
-  }
-  .btn-primary:active {
-    transform: translateY(1px);
-    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.35);
-  }
-  .btn-secondary {
-    background: transparent;
-    color: var(--color-ink);
-    box-shadow: inset 0 0 0 1.5px var(--color-ink);
-  }
-  .btn-tertiary {
-    min-height: 44px;
-    padding: 0 4px;
-    font: italic 400 17px/1 var(--font-display);
-    letter-spacing: 0;
-    text-transform: none;
-    text-decoration: underline;
-    text-underline-offset: 4px;
-  }
-  .btn:disabled,
-  .btn[aria-disabled='true'] {
-    cursor: not-allowed;
-    background: transparent;
-    color: var(--color-ink-muted);
-    box-shadow: inset 0 0 0 1.5px var(--color-rule);
-  }
-  .btn-tertiary:disabled {
-    box-shadow: none;
-    text-decoration: none;
-    opacity: 0.55;
-  }
-  .btn-icon {
-    width: 48px;
-    padding: 0;
-  }
+  /* ── Icons ─────────────────────────────────────────────────── */
   .icon-btn {
     display: inline-flex;
     align-items: center;
@@ -182,90 +65,6 @@
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
-  }
-
-  /* ── Dish colour ───────────────────────────────────────────── */
-  .tinted {
-    background: color-mix(in oklab, var(--tint) var(--tint-strength), var(--color-raised));
-    border: 1px solid color-mix(in oklab, var(--tint) 35%, var(--color-rule));
-  }
-
-  /* ── Craving: an order pad ─────────────────────────────────── */
-  .tick-list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    border-top: 1px solid var(--color-rule);
-  }
-  .tick-row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    width: 100%;
-    min-height: 46px;
-    padding: 0;
-    border: 0;
-    border-bottom: 1px solid var(--color-rule);
-    background: none;
-    color: inherit;
-    text-align: left;
-    cursor: pointer;
-    font: 400 19px/1 var(--font-display);
-    font-variation-settings: 'opsz' 24;
-  }
-  .tick-row[aria-pressed='true'] {
-    font-weight: 600;
-  }
-  .tick-box {
-    display: grid;
-    place-items: center;
-    width: 22px;
-    height: 22px;
-    flex: none;
-    border: 1.5px solid var(--color-ink);
-    border-radius: 2px;
-    font: 700 14px/1 var(--font-text);
-  }
-  .tick-row[aria-pressed='true'] .tick-box {
-    background: var(--color-ink);
-    color: var(--color-canvas);
-  }
-  .text-toggle {
-    min-height: 44px;
-    padding: 0 6px;
-    border: 0;
-    background: none;
-    color: inherit;
-    cursor: pointer;
-    font: 400 15px/1 var(--font-text);
-    text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  .text-toggle[aria-pressed='true'] {
-    font-weight: 700;
-    text-decoration-thickness: 2px;
-  }
-  .settings-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    min-height: 44px;
-    padding: 0;
-    border: 0;
-    border-bottom: 1px solid var(--color-rule);
-    background: none;
-    color: inherit;
-    cursor: pointer;
-    font: 600 11px/1.2 var(--font-text);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--color-ink-muted);
-  }
-  .settings-row b {
-    color: var(--color-ink);
-    font-weight: 600;
-    border-bottom: 1px solid var(--color-ink);
   }
 
   /* ── Dish card ─────────────────────────────────────────────── */
@@ -335,7 +134,6 @@
     padding: 7%;
     filter: drop-shadow(0 6px 9px rgb(29 26 22 / 0.24)) drop-shadow(0 1px 2px rgb(29 26 22 / 0.18));
   }
-  .dish-media-thumb[data-kind='cutout'] img,
   .dish-media-mini[data-kind='cutout'] img {
     padding: 5%;
     filter: drop-shadow(0 2px 3px rgb(29 26 22 / 0.24));
@@ -364,42 +162,10 @@
     position: absolute;
     right: 0.04em;
     bottom: -0.3em;
-    font: italic 300 1em/1 var(--font-display);
-    font-variation-settings:
-      'SOFT' 100,
-      'WONK' 1,
-      'opsz' 144;
+    font: italic 900 1em/1 var(--font-display);
     color: color-mix(in oklab, var(--tint) 55%, var(--color-ink));
     opacity: 0.55;
     pointer-events: none;
-  }
-  /* The card frame: the largest box of the chosen shape that fits the slot between the title and
-     the details. Every text row is fixed-height, so the slot, and therefore the frame, is the same
-     on every card; on a short phone the frame shrinks instead of the page scrolling. The shape is
-     --frame-w / --frame-h (16:10 by default; ?frame=4:3 in review builds). */
-  .dish-media-card {
-    width: min(100cqw, calc(100cqh * var(--frame-w) / var(--frame-h)));
-    aspect-ratio: var(--frame-w) / var(--frame-h);
-    border-radius: 4px;
-    font-size: min(150px, 62cqh);
-  }
-  /* Crops are centred on the dish (the brief keeps it centred); a per-image focal point can be
-     supplied later through --focus without touching layout. */
-  .dish-media img {
-    object-position: var(--focus, 50% 50%);
-  }
-  .dish-media-hero {
-    aspect-ratio: 16 / 10;
-    margin: -16px -18px 0;
-    border-radius: 2px 2px 0 0;
-    font-size: 190px;
-  }
-  .dish-media-thumb {
-    flex: none;
-    width: 56px;
-    height: 56px;
-    border-radius: var(--radius-control);
-    font-size: 44px;
   }
   .dish-media-mini {
     flex: none;
@@ -408,7 +174,6 @@
     border-radius: 2px;
     font-size: 32px;
   }
-  .dish-media-thumb .menu-mark,
   .dish-media-mini .menu-mark {
     right: 50%;
     bottom: 50%;
@@ -419,52 +184,6 @@
     .dish-media img,
     .dish-media-art {
       transition: none;
-    }
-  }
-
-  /* Action rows. Below 300px wide (a phone at 200% zoom is ~195px) they reflow instead of
-     squeezing targets under 44px or pushing buttons off-screen (WCAG 1.4.10, M1.7 audit). */
-  .match-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr 48px;
-    gap: 8px;
-  }
-  .alt-tiles {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-  }
-  .alt-tile > span {
-    min-width: 0;
-    overflow-wrap: anywhere;
-  }
-  @media (max-width: 300px) {
-    .match-actions {
-      grid-template-columns: 1fr 48px;
-    }
-    .match-actions > :nth-child(2) {
-      grid-column: 1 / -1;
-      order: 1;
-    }
-    .alt-tiles {
-      grid-template-columns: 1fr;
-    }
-    /* List tiles: drop the decorative thumbnail and put the action under the text. */
-    .dish-tile {
-      flex-wrap: wrap;
-    }
-    .dish-tile .dish-media-thumb {
-      display: none;
-    }
-    .dish-tile > :first-child,
-    .dish-tile > .dish-media-thumb + * {
-      flex-basis: 100%;
-    }
-    .dish-tile > :last-child:not(:first-child) {
-      margin-left: auto;
-    }
-    .price-line {
-      flex-wrap: wrap;
     }
   }
 
@@ -500,162 +219,17 @@
       inset 0 0 0 1px var(--color-rule),
       var(--shadow-card);
   }
-  /* On the card the note is one compact line so it never covers much of a small frame. */
-  .dish-media-card .dish-media-note {
-    left: 6px;
-    bottom: 6px;
-    padding: 3px 5px;
-    font-size: 9px;
-    white-space: nowrap;
-  }
   /* The dot stays with the item before it, but a line can break after it, so a list can wrap on a
      narrow screen instead of overflowing as one long "word". */
   .dot-list > * + *::before {
     content: '\00a0·\0020';
   }
-  .spice {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    color: var(--color-heat);
-  }
-  .spice svg {
-    width: 14px;
-    height: 14px;
-    fill: currentColor;
-  }
-  .spice .off {
-    color: color-mix(in oklab, var(--color-ink) 22%, transparent);
-  }
-  .leader {
-    flex: 1;
-    border-bottom: 1.5px dotted currentColor;
-    opacity: 0.45;
-    transform: translateY(-4px);
-  }
-
-  /* ── YES / NOPE ────────────────────────────────────────────── */
-
-  /* ── Counter ───────────────────────────────────────────────── */
-  .counter {
-    text-align: center;
-  }
-  .counter .from {
-    text-decoration: line-through;
-    text-decoration-thickness: 1.5px;
-    color: var(--color-ink-muted);
-    font: 600 12px/1 var(--font-text);
-  }
-  .counter .arrow {
-    color: var(--color-ink-muted);
-    margin: 0 4px;
-    font: 400 14px/1 var(--font-text);
-  }
-  .counter b {
-    font: 600 22px/1 var(--font-display);
-    font-variant-numeric: tabular-nums;
-    margin: 0 3px;
-  }
-  .counter .lbl {
-    font: 600 11px/1 var(--font-text);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  /* ── Match: a receipt ──────────────────────────────────────── */
-  .receipt {
-    position: relative;
-    background: var(--color-raised);
-    padding: 16px 18px 12px;
-    border-radius: 2px;
-    box-shadow: var(--shadow-card);
-  }
-  .receipt::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -8px;
-    height: 8px;
-    background: radial-gradient(circle at 6px -2px, transparent 6px, var(--color-raised) 6.5px) 0 0 / 12px 8px repeat-x;
-  }
-  .receipt-plate {
-    margin: -16px -18px 12px;
-    padding: 14px 18px 16px;
-    border-radius: 2px 2px 0 0;
-    border-bottom: 1px dashed color-mix(in oklab, var(--color-ink) 35%, transparent);
-  }
-  .dish-media-hero + .receipt-plate {
-    margin-top: 0;
-    border-radius: 0;
-  }
-  .badge {
-    display: inline-block;
-    padding: 5px 8px;
-    box-shadow: inset 0 0 0 1.5px var(--color-ink);
-    font: 600 10px/1 var(--font-text);
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-  }
-  .reasons {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    font: 400 14px/1.35 var(--font-text);
-  }
-  .reasons li {
-    display: flex;
-    gap: 8px;
-    padding: 4px 0;
-    border-bottom: 1px dotted var(--color-rule);
-  }
-  .reasons li::before {
-    content: '✓';
-    color: var(--color-accent);
-    font-weight: 700;
-  }
-  .reasons li[data-kind='avoided']::before {
-    content: '✕';
-    color: var(--color-ink-muted);
-  }
-  .reasons li[data-kind='craving']::before {
-    content: '•';
-    color: var(--color-ink-muted);
-  }
-  .alt-tile {
-    display: flex;
-    width: 100%;
-    min-height: 44px;
-    padding: 8px 10px;
-    border: 0;
-    border-radius: var(--radius-control);
-    box-shadow: inset 0 0 0 1px var(--color-rule);
-    background: none;
-    color: inherit;
-    text-align: left;
-    cursor: pointer;
-    font: italic 400 16px/1.1 var(--font-display);
-  }
-  .alt-tile {
-    align-items: center;
-    gap: 10px;
-  }
-  .alt-tile small {
-    display: block;
-    margin-bottom: 4px;
-    font: 600 10px/1 var(--font-text);
-    font-style: normal;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--color-ink-muted);
-  }
-
-  /* ── Sheets ────────────────────────────────────────────────── */
+  /* ── Sheets (Order, Directions, the Craving filters): a cream page with an ink rule on top ── */
   .sheet-backdrop {
     position: fixed;
     inset: 0;
     z-index: 30;
-    background: rgba(29, 26, 22, 0.4);
+    background: rgba(34, 21, 14, 0.45);
   }
   .sheet {
     position: fixed;
@@ -666,10 +240,18 @@
     max-height: 88dvh;
     overflow: auto;
     transform: translateX(-50%);
-    padding: 20px var(--spacing-gutter) calc(env(safe-area-inset-bottom, 0px) + 20px);
-    background: var(--color-raised);
+    padding: 16px var(--spacing-gutter) calc(env(safe-area-inset-bottom, 0px) + 20px);
+    background: var(--color-canvas);
+    color: var(--color-ink);
+    border-top: 3px solid var(--color-ink);
     border-radius: var(--radius-card) var(--radius-card) 0 0;
-    box-shadow: 0 -10px 30px -12px rgba(29, 26, 22, 0.45);
+    box-shadow: 0 -10px 30px -12px rgba(34, 21, 14, 0.45);
+  }
+  .sheet-title {
+    margin: 0;
+    font: 900 26px/1.05 var(--font-display);
+    letter-spacing: -0.015em;
+    overflow-wrap: anywhere;
   }
   .segmented {
     display: flex;
@@ -679,23 +261,25 @@
   .segmented button {
     min-height: 44px;
     padding: 0 14px;
-    border: 0;
-    border-radius: var(--radius-control);
-    box-shadow: inset 0 0 0 1.5px var(--color-ink);
+    border: 2px solid var(--color-ink);
+    border-radius: 999px;
     background: transparent;
     color: var(--color-ink);
     cursor: pointer;
-    font: 600 13px/1 var(--font-text);
+    font: 600 14px/1 var(--font-text);
   }
   .segmented button[aria-pressed='true'] {
     background: var(--color-ink);
     color: var(--color-raised);
   }
+  /* Status and prototype notes: a cream slip with an ink edge, readable on cream or on a cover. */
   .notice {
+    margin: 0;
     padding: 10px 12px;
-    border: 1px dashed var(--color-ink-muted);
-    border-radius: var(--radius-control);
+    border-left: 3px solid var(--color-ink);
+    border-radius: 2px;
+    background: var(--color-raised);
     font: 500 13px/1.4 var(--font-text);
-    color: var(--color-ink-muted);
+    color: var(--color-ink);
   }
 }

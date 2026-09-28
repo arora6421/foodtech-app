@@ -1,10 +1,25 @@
 {
   "label": "crave",
-  "date": "2026-09-26T18:29:47.150Z",
+  "date": "2026-09-28T23:08:29.666Z",
   "viewports": [
     {
       "viewport": "phone 390×844",
       "screens": [
+        {
+          "screen": "Saved › empty",
+          "axe": [],
+          "axeRules": 15,
+          "axeIncomplete": [
+            "color-contrast"
+          ],
+          "reflow": null,
+          "clipped": [],
+          "targets": [],
+          "keyboard": {
+            "stops": 2,
+            "problems": []
+          }
+        },
         {
           "screen": "Welcome",
           "axe": [],
@@ -16,14 +31,14 @@
           "clipped": [],
           "targets": [],
           "keyboard": {
-            "stops": 3,
+            "stops": 2,
             "problems": []
           }
         },
         {
           "screen": "Craving",
           "axe": [],
-          "axeRules": 18,
+          "axeRules": 17,
           "axeIncomplete": [
             "color-contrast"
           ],
@@ -76,7 +91,7 @@
           "clipped": [],
           "targets": [],
           "keyboard": {
-            "stops": 8,
+            "stops": 7,
             "problems": []
           }
         },
@@ -128,7 +143,7 @@
         {
           "screen": "Saved › detail",
           "axe": [],
-          "axeRules": 17,
+          "axeRules": 16,
           "axeIncomplete": [
             "color-contrast"
           ],
@@ -137,6 +152,21 @@
           "targets": [],
           "keyboard": {
             "stops": 2,
+            "problems": []
+          }
+        },
+        {
+          "screen": "Match › pick list",
+          "axe": [],
+          "axeRules": 18,
+          "axeIncomplete": [
+            "color-contrast"
+          ],
+          "reflow": null,
+          "clipped": [],
+          "targets": [],
+          "keyboard": {
+            "stops": 1,
             "problems": []
           }
         }
@@ -146,6 +176,21 @@
       "viewport": "reflow 320×568",
       "screens": [
         {
+          "screen": "Saved › empty",
+          "axe": [],
+          "axeRules": 15,
+          "axeIncomplete": [
+            "color-contrast"
+          ],
+          "reflow": null,
+          "clipped": [],
+          "targets": [],
+          "keyboard": {
+            "stops": 2,
+            "problems": []
+          }
+        },
+        {
           "screen": "Welcome",
           "axe": [],
           "axeRules": 16,
@@ -156,14 +201,14 @@
           "clipped": [],
           "targets": [],
           "keyboard": {
-            "stops": 3,
+            "stops": 2,
             "problems": []
           }
         },
         {
           "screen": "Craving",
           "axe": [],
-          "axeRules": 18,
+          "axeRules": 17,
           "axeIncomplete": [
             "color-contrast"
           ],
@@ -216,7 +261,7 @@
           "clipped": [],
           "targets": [],
           "keyboard": {
-            "stops": 8,
+            "stops": 7,
             "problems": []
           }
         },
@@ -268,7 +313,7 @@
         {
           "screen": "Saved › detail",
           "axe": [],
-          "axeRules": 17,
+          "axeRules": 16,
           "axeIncomplete": [
             "color-contrast"
           ],
@@ -279,12 +324,42 @@
             "stops": 2,
             "problems": []
           }
+        },
+        {
+          "screen": "Match › pick list",
+          "axe": [],
+          "axeRules": 18,
+          "axeIncomplete": [
+            "color-contrast"
+          ],
+          "reflow": null,
+          "clipped": [],
+          "targets": [],
+          "keyboard": {
+            "stops": 1,
+            "problems": []
+          }
         }
       ]
     },
     {
       "viewport": "200% zoom 195×422",
       "screens": [
+        {
+          "screen": "Saved › empty",
+          "axe": [],
+          "axeRules": 15,
+          "axeIncomplete": [
+            "color-contrast"
+          ],
+          "reflow": null,
+          "clipped": [],
+          "targets": [],
+          "keyboard": {
+            "stops": 2,
+            "problems": []
+          }
+        },
         {
           "screen": "Welcome",
           "axe": [],
@@ -296,14 +371,14 @@
           "clipped": [],
           "targets": [],
           "keyboard": {
-            "stops": 3,
+            "stops": 2,
             "problems": []
           }
         },
         {
           "screen": "Craving",
           "axe": [],
-          "axeRules": 18,
+          "axeRules": 17,
           "axeIncomplete": [
             "color-contrast"
           ],
@@ -356,7 +431,7 @@
           "clipped": [],
           "targets": [],
           "keyboard": {
-            "stops": 8,
+            "stops": 7,
             "problems": []
           }
         },
@@ -408,7 +483,7 @@
         {
           "screen": "Saved › detail",
           "axe": [],
-          "axeRules": 17,
+          "axeRules": 16,
           "axeIncomplete": [
             "color-contrast"
           ],
@@ -417,6 +492,21 @@
           "targets": [],
           "keyboard": {
             "stops": 2,
+            "problems": []
+          }
+        },
+        {
+          "screen": "Match › pick list",
+          "axe": [],
+          "axeRules": 18,
+          "axeIncomplete": [
+            "color-contrast"
+          ],
+          "reflow": null,
+          "clipped": [],
+          "targets": [],
+          "keyboard": {
+            "stops": 1,
             "problems": []
           }
         }

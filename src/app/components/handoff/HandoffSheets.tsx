@@ -37,7 +37,7 @@ export function OrderSheet({
           <button
             key={p}
             type="button"
-            className="btn btn-secondary"
+            className="btn-cover"
             onClick={() => {
               setOpened(p)
               track('handoff_opened', { kind: 'delivery_platform', platform: p })
@@ -80,7 +80,7 @@ export function DirectionsSheet({
       </p>
       <button
         type="button"
-        className="btn btn-primary w-full"
+        className="btn-cover-primary w-full"
         onClick={() => {
           setOpened(true)
           track('handoff_opened', { kind: 'maps' })

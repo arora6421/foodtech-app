@@ -22,14 +22,28 @@ export interface DishImageProps {
   decorative?: boolean
   /** Above the fold and needed now (the top card, the match hero). */
   priority?: boolean
+  /** Label an illustrative image on the image itself. Off where the page labels it once instead
+   *  (the Welcome cover) and on small tiles, as with thumbnails. */
+  note?: boolean
 }
 
-export function DishImage({ image, tint, variant, art, decorative = false, priority = false }: DishImageProps) {
+export function DishImage({
+  image,
+  tint,
+  variant,
+  art,
+  decorative = false,
+  priority = false,
+  note = true,
+}: DishImageProps) {
   // Status belongs to one src; a new src starts pending again.
   const [loadState, setLoadState] = useState<{ src: string; status: Status } | null>(null)
   const status: Status = image && loadState?.src === image.src ? loadState.status : 'pending'
   const showNote =
-    image?.illustrative && status === 'loaded' && (variant === 'card' || variant === 'hero' || variant === 'plate')
+    note &&
+    image?.illustrative &&
+    status === 'loaded' &&
+    (variant === 'card' || variant === 'hero' || variant === 'plate')
   return (
     <div
       className={`dish-media dish-media-${variant}`}

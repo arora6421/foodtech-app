@@ -106,7 +106,7 @@ try {
     await page.evaluate(() => sessionStorage.clear())
     await page.goto(`http://localhost:${PORT}/craving?x=1${plateParam}`, { waitUntil: 'load' })
     await page.evaluate(() => document.fonts.ready)
-    await page.locator('::-p-text(Show me dishes)').click()
+    await page.locator('::-p-text(Start swiping)').click()
     await page.waitForSelector('.swipe-card .dish-card')
     const size = await page.evaluate(() => {
       const r = document.querySelector('.swipe-card:not([inert]) .dish-card').getBoundingClientRect()

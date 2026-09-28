@@ -60,7 +60,7 @@ export function Sheet({
       <div className="sheet-backdrop" onClick={onClose} aria-hidden="true" />
       <div ref={ref} className="sheet" role="dialog" aria-modal="true" aria-labelledby={titleId}>
         <div className="mb-4 flex items-center justify-between gap-3">
-          <h2 id={titleId} className="t-title" style={{ fontSize: 24 }}>
+          <h2 id={titleId} className="sheet-title">
             {title}
           </h2>
           <button type="button" className="icon-btn" onClick={onClose} aria-label={copy.sheets.close}>

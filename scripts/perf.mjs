@@ -135,9 +135,9 @@ async function run(browser) {
   })
 
   await page.locator('::-p-text(Just me)').click()
-  await page.waitForSelector('::-p-text(Show me dishes)')
+  await page.waitForSelector('::-p-text(Start swiping)')
   const t0 = await page.evaluate(() => performance.now())
-  await page.locator('::-p-text(Show me dishes)').click()
+  await page.locator('::-p-text(Start swiping)').click()
   await page.waitForSelector('.swipe-card .dish-card')
   out.firstCard = (await page.evaluate(() => performance.now())) - t0
 
@@ -260,7 +260,7 @@ console.log(
     .map(([k, v]) => `${k} ${kb(v)} KB`)
     .join(' · ')}`,
 )
-console.log(`Tap "Show me dishes" → first card: ${r1(summary.firstCardMs)} ms`)
+console.log(`Tap "Start swiping" → first card: ${r1(summary.firstCardMs)} ms`)
 console.log(
   `Swipe button input latency: p50 ${r1(summary.swipeInputMs.p50)} ms · p95 ${r1(summary.swipeInputMs.p95)} ms · max ${r1(summary.swipeInputMs.max)} ms`,
 )

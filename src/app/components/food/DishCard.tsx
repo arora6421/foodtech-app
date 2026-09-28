@@ -3,9 +3,8 @@ import type { CSSProperties, ReactNode } from 'react'
 import { copy } from '../../copy/en-GB'
 import { coverFor } from '../../design/covers'
 import { nameTier } from '../../design/nameFit'
-import type { ResolvedImage } from '../../services/imageResolver'
 import type { DishCardModel } from '../../state/viewModels'
-import { DishImage, MenuMark, PlateArt } from './DishImage'
+import { DishImage, PlateArt } from './DishImage'
 
 // The swipe card, as a magazine cover ("Crave", docs/design/crave-design-handoff/03 and 04).
 //   kind + card number · rule · the dish name (two lines at most) ·
@@ -106,60 +105,5 @@ export function DishCard({ model, overlay }: DishCardProps) {
         </div>
       </div>
     </article>
-  )
-}
-
-/** A compact tinted tile for lists (Saved, pick list), with a thumbnail that is a photo or the dish's initial. */
-export interface TileModel {
-  archetypeName: string
-  offeringName: string
-  venueName: string
-  priceLabel: string
-  tint: string
-  cuisineLabel?: string
-  image: ResolvedImage | null
-  initial: string
-}
-
-export function DishTile({ model, onClick, action }: { model: TileModel; onClick?: () => void; action?: ReactNode }) {
-  const body = (
-    <>
-      {model.cuisineLabel && <span className="t-label muted">{model.cuisineLabel}</span>}
-      <span className="t-display-l" style={{ fontSize: 24 }}>
-        {model.archetypeName}
-      </span>
-      <span className="t-caption dot-list">
-        {model.offeringName.toLowerCase() !== model.archetypeName.toLowerCase() && <span>{model.offeringName}</span>}
-        <span>{model.venueName}</span>
-        <span>{model.priceLabel}</span>
-      </span>
-    </>
-  )
-  return (
-    <div
-      className="dish-tile tinted flex items-center gap-3"
-      style={{ '--tint': model.tint, borderRadius: 'var(--radius-card)', padding: '12px 14px' } as CSSProperties}
-    >
-      <DishImage
-        variant="thumb"
-        image={model.image}
-        tint={model.tint}
-        art={<MenuMark text={model.initial} />}
-        decorative
-      />
-      {onClick ? (
-        <button
-          type="button"
-          onClick={onClick}
-          className="flex min-h-11 min-w-0 flex-1 flex-col items-start gap-1 text-left [overflow-wrap:anywhere]"
-          style={{ background: 'none', border: 0, padding: 0, color: 'inherit', cursor: 'pointer' }}
-        >
-          {body}
-        </button>
-      ) : (
-        <div className="flex min-w-0 flex-1 flex-col gap-1 [overflow-wrap:anywhere]">{body}</div>
-      )}
-      {action}
-    </div>
   )
 }

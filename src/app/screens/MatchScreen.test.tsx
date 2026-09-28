@@ -142,7 +142,7 @@ describe('MatchScreen', () => {
     renderMatch()
 
     // Choose a dish from the list that isn't the top one.
-    const tiles = [...document.querySelectorAll<HTMLButtonElement>('main li button, main .dish-tile button')]
+    const tiles = [...document.querySelectorAll<HTMLButtonElement>('main .issue-open')]
     await user.click(tiles[1] ?? tiles[0]!)
     expect(screen.getByRole('button', { name: 'Back to the list' })).toBeTruthy()
     expect(screen.queryByRole('button', { name: 'Return to our match' })).toBeNull()

@@ -95,19 +95,34 @@ const LAYOUT_CHECKS = () => {
     const ownText = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim())
     const text = el.textContent.trim()
     if (!text) continue
-    const hides = /hidden|clip/.test(st.overflowX + st.overflowY) || st.webkitLineClamp !== 'none'
+    const hidesX = /hidden|clip/.test(st.overflowX) || st.webkitLineClamp !== 'none'
+    const hidesY = /hidden|clip/.test(st.overflowY) || st.webkitLineClamp !== 'none'
     const scrolls = (v) => v === 'auto' || v === 'scroll' // overflow you can scroll to isn't lost
-    // Horizontal: text that actually extends past the box (decorative layers like stamps don't count).
+    // Text that actually extends past the box. Decorative layers (stamps, plates bleeding off a
+    // cover or tile) don't count: their overflow is the design, and they carry no text.
     const box = el.getBoundingClientRect()
-    const textPast = [...el.querySelectorAll('*')].some((d) => {
-      if (d.closest('.stamp, .dish-media, .card-plate, .sr-only') || !d.textContent.trim()) return false
-      const r = d.getBoundingClientRect()
-      return r.width > 0 && (r.right > box.right + 1 || r.left < box.left - 1)
-    })
-    const overX = (el.children.length ? textPast : el.scrollWidth > el.clientWidth + 1) && !scrolls(st.overflowX)
-    const overY = el.scrollHeight > el.clientHeight + 1 && !scrolls(st.overflowY)
-    if (hides && (overX || overY)) out.clipped.push(`cut off: ${describe(el)} "${text.slice(0, 40)}"`)
-    else if (ownText && !hides && overX && st.display !== 'inline')
+    const textPast = (axis) =>
+      [...el.querySelectorAll('*')].some((d) => {
+        if (
+          d.closest('.stamp, .dish-media, .card-plate, .issue-plate, .welcome-plate, .sr-only') ||
+          !d.textContent.trim()
+        )
+          return false
+        const r = d.getBoundingClientRect()
+        if (!(r.width > 0)) return false
+        return axis === 'x'
+          ? r.right > box.right + 1 || r.left < box.left - 1
+          : r.bottom > box.bottom + 1 || r.top < box.top - 1
+      })
+    const pastX = !scrolls(st.overflowX) && (el.children.length ? textPast('x') : el.scrollWidth > el.clientWidth + 1)
+    const overX = hidesX && pastX
+    const overY =
+      hidesY &&
+      !scrolls(st.overflowY) &&
+      ((ownText && el.scrollHeight > el.clientHeight + 1) ||
+        (el.children.length ? textPast('y') : el.scrollHeight > el.clientHeight + 1))
+    if (overX || overY) out.clipped.push(`cut off: ${describe(el)} "${text.slice(0, 40)}"`)
+    else if (ownText && !hidesX && pastX && st.display !== 'inline')
       out.clipped.push(`spills out of its box: ${describe(el)} "${text.slice(0, 40)}"`)
   }
   for (const el of document.querySelectorAll(
@@ -210,23 +225,28 @@ async function walk(browser, vp) {
     }
   }
 
+  await step('Saved › empty', async () => {
+    await go('/saved')
+    await page.waitForSelector('.empty-state')
+    results.push(await audit(page, 'Saved › empty'))
+  })
   await step('Welcome', async () => {
     await go('/')
     results.push(await audit(page, 'Welcome'))
   })
   await step('Craving', async () => {
     await click('Just me')
-    await page.waitForSelector('::-p-text(Show me dishes)')
+    await page.waitForSelector('::-p-text(Start swiping)')
     results.push(await audit(page, 'Craving'))
   })
   await step('Craving › Diet sheet', async () => {
-    await (await page.$('.settings-row')).click()
+    await (await page.$('.filter-row')).click()
     await page.waitForSelector('[role="dialog"]')
     results.push(await audit(page, 'Craving › Diet sheet'))
     await page.keyboard.press('Escape')
   })
   await step('Deck', async () => {
-    await click('Show me dishes')
+    await click('Start swiping')
     await page.waitForSelector('.swipe-card .dish-card')
     results.push(await audit(page, 'Deck'))
   })
@@ -252,13 +272,32 @@ async function walk(browser, vp) {
   await step('Saved', async () => {
     await (await page.$('.cover-actions-row button:last-child')).click()
     await go('/saved')
-    await page.waitForSelector('main li button')
+    await page.waitForSelector('.issue-open')
     results.push(await audit(page, 'Saved'))
   })
   await step('Saved › detail', async () => {
-    await (await page.$('main li button')).click()
+    await (await page.$('.issue-open')).click()
     await page.waitForSelector('main h1')
     results.push(await audit(page, 'Saved › detail'))
+  })
+  await step('Match › pick list', async () => {
+    // Nothing landed twice: the closest five, as mini covers.
+    const allNo = async () => {
+      await page.waitForSelector('.swipe-card .dish-card')
+      for (let i = 0; i < 25 && !(await page.$('.match-kicker')); i++) {
+        await page.click('button.vote-no').catch(() => {})
+        await new Promise((r) => setTimeout(r, 350))
+      }
+      await page.waitForSelector('::-p-text(Show me something else)')
+    }
+    await go('/craving')
+    await click('Start swiping')
+    await allNo()
+    await click('Show me something else')
+    await allNo()
+    await click('Show me something else')
+    await page.waitForSelector('.issue-open')
+    results.push(await audit(page, 'Match › pick list'))
   })
   await ctx.close()
   return results

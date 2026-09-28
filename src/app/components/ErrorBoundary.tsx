@@ -1,6 +1,7 @@
 import { Component } from 'react'
 import type { ErrorInfo, ReactNode } from 'react'
 import { copy } from '../copy/en-GB'
+import { PlateArt } from './food/DishImage'
 
 // If a screen throws while rendering, React unmounts everything, leaving a blank page. This keeps
 // the app shell and offers a way out: "Start again" clears the session and reloads from Welcome.
@@ -24,16 +25,17 @@ export class ErrorBoundary extends Component<Props, { failed: boolean }> {
   override render() {
     if (!this.state.failed) return this.props.children
     return (
-      <main className="screen" role="alert">
-        <h1 className="t-title" style={{ margin: '40px 0 10px' }}>
-          {copy.error.title}
-        </h1>
-        <p className="t-body muted" style={{ margin: '0 0 20px' }}>
-          {copy.error.body}
-        </p>
-        <button type="button" className="btn btn-primary" onClick={this.props.onReset}>
-          {copy.error.restart}
-        </button>
+      <main className="screen contents-page" role="alert">
+        <div className="empty-state">
+          <span className="empty-plate" aria-hidden="true">
+            <PlateArt initial="?" />
+          </span>
+          <h1 className="contents-title">{copy.error.title}</h1>
+          <p className="empty-text">{copy.error.body}</p>
+          <button type="button" className="btn-cover-primary" onClick={this.props.onReset}>
+            {copy.error.restart}
+          </button>
+        </div>
       </main>
     )
   }

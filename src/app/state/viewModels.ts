@@ -149,6 +149,25 @@ export function savedDishArt(
   return { image: a && o && v ? resolveDishImage(imageSource(), a, o, v) : null, initial: initialOf(name) }
 }
 
+/** The Welcome cover's plates: three real dishes (their catalogue images when available, else the
+ *  no-photo plate). Decorative; the order is the cover's layout, big plate first. */
+export const WELCOME_DISHES = ['margherita-pizza', 'tonkotsu-ramen', 'chana-masala'] as const
+export function welcomePlates(
+  loaded: LoadedCatalogue | null,
+): { id: string; image: ResolvedImage | null; initial: string; tint: string }[] {
+  return WELCOME_DISHES.map((id) => {
+    const a = loaded?.archetypes.get(id)
+    const o = a ? [...(loaded?.offerings.values() ?? [])].find((x) => x.archetypeId === id) : undefined
+    const v = o ? loaded?.venues.get(o.venueId) : undefined
+    return {
+      id,
+      image: a && o && v ? resolveDishImage(imageSource(), a, o, v) : null,
+      initial: initialOf(a?.name ?? id),
+      tint: a?.image.dominantColour ?? '#c8894a',
+    }
+  })
+}
+
 /** Image URLs for whichever card comes next (after YES or after NOPE), once the adapter has pre-computed them. */
 export function nextCardImages(loaded: LoadedCatalogue, state: SoloState): string[] {
   if (!imageSource().enabled) return []
