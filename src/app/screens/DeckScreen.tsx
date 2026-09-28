@@ -7,7 +7,7 @@ import { SwipeDeck } from '../components/deck/SwipeDeck'
 import type { DeckMove, Verdict } from '../components/deck/SwipeDeck'
 import { useImagePrefetch } from '../hooks/useImagePrefetch'
 import { soloSessionStore, useSolo } from '../state/soloSessionStore'
-import { counterModel, currentCard, nextCardImages } from '../state/viewModels'
+import { currentCard, nextCardImages, progressModel } from '../state/viewModels'
 
 // S3 Swipe deck (MVP_SPEC §4). Drag, the buttons and the keyboard all go through `commit`, so every
 // input gets the same flight and stamp. Keyboard: ← nope, → yes, Enter on the card "that's the one",
@@ -92,7 +92,7 @@ export function DeckScreen() {
   if (!state.current && !state.result) return <Navigate to="/craving" replace />
 
   const card = state.current && !state.result ? currentCard(loaded, state, state.current) : null
-  const counter = counterModel(state)
+  const progress = progressModel(state)
 
   return (
     <main className="screen deck-screen">
@@ -100,10 +100,12 @@ export function DeckScreen() {
         {card ? copy.deck.heading(card.offeringName, card.cardNumber ?? 0) : copy.match.title}
       </h1>
       <p className="sr-only" aria-live="polite" aria-atomic="true">
-        {card && move.kind !== 'none' ? copy.deck.announce(card.cardNumber ?? 0, card.a11yLabel, counter.likely) : ''}
+        {card && move.kind !== 'none'
+          ? copy.deck.announce(card.cardNumber ?? 0, card.a11yLabel, copy.deck.progress[progress.stage])
+          : ''}
       </p>
       <DeckTopBar
-        counter={counter}
+        progress={progress}
         canUndo={state.events.length > 0 && !finishing}
         onUndo={back}
         onClose={() => navigate('/craving')}

@@ -1,15 +1,15 @@
 import { copy, PRODUCT_NAME } from '../../copy/en-GB'
-import type { CounterModel } from '../../state/viewModels'
+import type { ProgressModel } from '../../state/viewModels'
 import { Icon } from '../primitives/Icon'
 
-// Close · the masthead (with the narrowing counter under it) · Undo.
+// Close · the masthead (with progress towards the decision under it: "Card 4 · a few more") · Undo.
 export function DeckTopBar({
-  counter,
+  progress,
   canUndo,
   onUndo,
   onClose,
 }: {
-  counter: CounterModel
+  progress: ProgressModel
   canUndo: boolean
   onUndo: () => void
   onClose: () => void
@@ -24,12 +24,7 @@ export function DeckTopBar({
           {PRODUCT_NAME}
         </div>
         <span className="deck-count">
-          <span className="sr-only">
-            {counter.likely} of {counter.total} dishes left
-          </span>
-          <span aria-hidden="true">
-            {counter.likely} {copy.deck.left}
-          </span>
+          {copy.deck.card(progress.card)} · {copy.deck.progress[progress.stage]}
         </span>
       </div>
       <button type="button" className="icon-btn" aria-label={copy.deck.undo} onClick={onUndo} disabled={!canUndo}>

@@ -8,7 +8,7 @@ import { createSavedStore } from './savedStore'
 import { createSettingsStore } from './settingsStore'
 import { createSoloSessionStore } from './soloSessionStore'
 import type { SoloStoreDeps } from './soloSessionStore'
-import { matchModel, counterModel, currentCard, priceLabel, distanceLabel } from './viewModels'
+import { matchModel, progressModel, currentCard, priceLabel, distanceLabel } from './viewModels'
 
 const deps = (over: Partial<SoloStoreDeps> = {}): SoloStoreDeps => ({
   loadCatalogue: () => loadCatalogue(),
@@ -212,6 +212,23 @@ describe('view models', () => {
     expect(card.a11yLabel).toContain(card.offeringName)
     expect(card.a11yLabel).toContain(card.priceLabel)
     expect(card.a11yLabel).toMatch(/Spice \d of 4/)
-    expect(counterModel(state!).label).toMatch(/^\d+ left$/)
+    expect(progressModel(state!)).toEqual({ card: 1, stage: 'more' })
+  })
+
+  it('shows progress towards a decision, never a remaining count', async () => {
+    const store = createSoloSessionStore(deps())
+    await store.getState().init()
+    store.getState().start({ moods: [], intent: 'normal' })
+    const stages: string[] = []
+    for (let i = 0; i < 20 && !store.getState().state!.result; i++) {
+      const p = progressModel(store.getState().state!)
+      expect(p.card).toBe(i + 1)
+      stages.push(p.stage)
+      store.getState().swipe(i % 2 ? 'no' : 'yes')
+    }
+    expect(stages[0]).toBe('more')
+    // "Nearly there" never appears before a stop is within reach of the engine's minimum swipes.
+    const first = stages.indexOf('nearly')
+    if (first > -1) expect(first).toBeGreaterThanOrEqual(store.getState().state!.model.config.minSwipes - 2)
   })
 })

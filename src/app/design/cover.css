@@ -294,6 +294,38 @@
     text-decoration-thickness: 3px;
   }
 
+  /* ── Review variant: "large plate" (?plate=large on previews; the product owner is choosing) ──
+     Two Inside ingredients and one row of pills (two tags + spice, sized to fit one row) free the
+     height the plate needs to reach the mockup's size: up to 104% of the card's inner width, bleeding
+     25% (the mockup's 22% let its rim touch some long second ingredients). Checked on every card by scripts/card-layout-audit.mjs --plate large. */
+  :root[data-plate='large'] .card-inside li:nth-child(n + 3) {
+    display: none;
+  }
+  :root[data-plate='large'] .card-pills .pill:nth-child(3):not(:last-child) {
+    display: none;
+  }
+  :root[data-plate='large'] .card-pills {
+    flex-wrap: nowrap;
+    min-height: 27px;
+    gap: min(6px, 1.6cqw);
+  }
+  :root[data-plate='large'] .card-pills .pill {
+    padding: 4px min(11px, 2.8cqw);
+    font-size: min(13px, 3.9cqw);
+  }
+  :root[data-plate='large'] .card-middle {
+    --plate: min(104cqw, 100cqh);
+  }
+  :root[data-plate='large'] .card-plate {
+    right: calc(var(--plate) * -0.25 - 20px);
+  }
+  :root[data-plate='large'] .price-sticker {
+    left: max(calc(40cqw + 8px), calc(100cqw + 20px - var(--plate) * 0.75 - var(--sticker) * 0.45));
+  }
+  :root[data-plate='large'] .plate-art {
+    padding-left: 18%;
+  }
+
   /* ── Deck chrome ───────────────────────────────────────────────────────────────────── */
   .deck-bar {
     display: grid;
@@ -309,9 +341,7 @@
   .deck-count {
     display: block;
     margin-top: 3px;
-    font: 700 10px/1.2 var(--font-text);
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+    font: 600 12px/1.2 var(--font-text);
     text-align: center;
     font-variant-numeric: tabular-nums;
   }

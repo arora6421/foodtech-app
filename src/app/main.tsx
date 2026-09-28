@@ -16,6 +16,7 @@ declare const __PREVIEW_IMAGES__: boolean
 //   ?debug=cards   every dish as a deck card, for scripts/card-layout-audit.mjs
 //   ?images=demo | broken | review | crops   image review sources (debug/demoImages.ts)
 //   ?frame=W:H     try another deck-card frame shape (16:10 is the default)
+//   ?plate=large   the larger-plate review variant of the deck card
 const params = new URLSearchParams(location.search)
 
 async function start() {
@@ -31,6 +32,8 @@ async function start() {
       const source = IMAGE_SOURCES[images as keyof typeof IMAGE_SOURCES]
       if (source) setImageSource(source)
     }
+    // ?plate=large: the review variant with two Inside ingredients and a larger plate (cover.css).
+    if (params.get('plate') === 'large') document.documentElement.dataset.plate = 'large'
     const frame = /^(\d+):(\d+)$/.exec(params.get('frame') ?? '')
     if (frame) {
       document.documentElement.style.setProperty('--frame-w', frame[1]!)

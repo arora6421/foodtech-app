@@ -1,5 +1,5 @@
 // Deck-card layout audit (Crave). Repeatable.
-//   node scripts/card-layout-audit.mjs [--no-build]
+//   node scripts/card-layout-audit.mjs [--no-build] [--plate large]
 // For each phone size: measures the real deck's card size, then renders every dish in the catalogue
 // as a card of exactly that size (the ?debug=cards gallery, review build) and checks, in a real browser
 // with the real fonts:
@@ -13,6 +13,8 @@ import { build, preview } from 'vite'
 
 const CHROME = process.env.CHROME_PATH ?? 'C:/Program Files/Google/Chrome/Application/chrome.exe'
 const PORT = 4199
+const PLATE = process.argv.includes('--plate') ? process.argv[process.argv.indexOf('--plate') + 1] : ''
+const plateParam = PLATE ? `&plate=${PLATE}` : ''
 const PHONES = [
   { name: 'iPhone SE 375×667', width: 375, height: 667 },
   { name: 'Android 360×740', width: 360, height: 740 },
@@ -78,7 +80,13 @@ const CHECK = () => {
         failures.push(`${dish}: "${text}" spills out of the card`)
     }
   }
-  return { cards: document.querySelectorAll('.gallery-slot').length, tiers: maxTier, failures }
+  const plateBox = document.querySelector('.gallery-slot .card-plate')?.getBoundingClientRect()
+  return {
+    cards: document.querySelectorAll('.gallery-slot').length,
+    tiers: maxTier,
+    failures,
+    plate: Math.round(plateBox?.width ?? 0),
+  }
 }
 
 let failed = 0
@@ -94,9 +102,9 @@ try {
     })
     await page.emulateMediaFeatures([{ name: 'prefers-reduced-motion', value: 'reduce' }])
     // 1. The real deck: how big is a card on this phone?
-    await page.goto(`http://localhost:${PORT}/craving`, { waitUntil: 'load' })
+    await page.goto(`http://localhost:${PORT}/craving?x=1${plateParam}`, { waitUntil: 'load' })
     await page.evaluate(() => sessionStorage.clear())
-    await page.goto(`http://localhost:${PORT}/craving`, { waitUntil: 'load' })
+    await page.goto(`http://localhost:${PORT}/craving?x=1${plateParam}`, { waitUntil: 'load' })
     await page.evaluate(() => document.fonts.ready)
     await page.locator('::-p-text(Show me dishes)').click()
     await page.waitForSelector('.swipe-card .dish-card')
@@ -105,7 +113,7 @@ try {
       return { w: Math.round(r.width), h: Math.round(r.height) }
     })
     // 2. Every dish at that size.
-    await page.goto(`http://localhost:${PORT}/?debug=cards&images=review&w=${size.w}&h=${size.h}`, {
+    await page.goto(`http://localhost:${PORT}/?debug=cards&images=review&w=${size.w}&h=${size.h}${plateParam}`, {
       waitUntil: 'load',
     })
     await page.waitForSelector('[data-gallery-ready]')
@@ -113,7 +121,7 @@ try {
     const r = await page.evaluate(CHECK)
     failed += r.failures.length
     console.log(
-      `${phone.name.padEnd(24)} card ${size.w}×${size.h} · ${r.cards} cards · name sizes ${JSON.stringify(r.tiers)} · ${r.failures.length ? `${r.failures.length} FAIL` : 'all clear'}`,
+      `${phone.name.padEnd(24)} card ${size.w}×${size.h} · plate ${r.plate}px · ${r.cards} cards · name sizes ${JSON.stringify(r.tiers)} · ${r.failures.length ? `${r.failures.length} FAIL` : 'all clear'}`,
     )
     for (const f of r.failures.slice(0, 12)) console.log(`    ${f}`)
     await page.close()

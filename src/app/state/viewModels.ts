@@ -63,10 +63,11 @@ export interface MatchModel {
   pickList: DishCardModel[] | null
 }
 
-export interface CounterModel {
-  total: number
-  likely: number
-  label: string
+/** Progress towards a decision ("Card 4 · a few more"), never a count of what's left: a big
+ *  remaining number makes the deck feel like a long list, which the product exists to avoid. */
+export interface ProgressModel {
+  card: number
+  stage: 'more' | 'nearly'
 }
 
 const CUISINE_LABEL = (c: string) =>
@@ -206,10 +207,19 @@ export function currentCard(loaded: LoadedCatalogue, state: SoloState, card: Car
   return dishCard(loaded, state, card.archetypeId, card.offeringId, card.cardIndex + 1)
 }
 
-export function counterModel(state: SoloState): CounterModel {
-  const total = state.model.pool.candidates.length
-  const likely = state.counter.shown
-  return { total, likely, label: `${likely} left` }
+/**
+ * Read-only use of the engine's own stopping signals (nothing here changes what it does):
+ * "nearly there" once a stop is within reach, i.e. past the minimum swipes but one and close to the
+ * confidence it needs (the top candidates' combined weight at ≥ 80% of the threshold, with support),
+ * or within two cards of the hard maximum. Otherwise "a few more".
+ */
+export function progressModel(state: SoloState): ProgressModel {
+  const { minSwipes, maxSwipes, confidentMass } = state.model.config
+  const swiped = state.swipes.length
+  const check = state.lastCheck
+  const closeToConfident = !!check && check.support && check.topMass3 >= 0.8 * confidentMass
+  const nearly = swiped >= maxSwipes - 2 || (swiped >= minSwipes - 1 && closeToConfident)
+  return { card: (state.current?.cardIndex ?? swiped) + 1, stage: nearly ? 'nearly' : 'more' }
 }
 
 function reasonsFrom(e: Explanation | undefined): ReasonModel[] {
