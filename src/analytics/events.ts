@@ -14,6 +14,7 @@ export type EventName =
   | 'match_action'
   | 'handoff_opened'
   | 'session_abandoned'
+  | 'session_discarded'
 
 export type EventProps = Record<string, string | number | boolean | null>
 

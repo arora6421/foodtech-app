@@ -3,7 +3,7 @@ import type { CatalogRepository } from '../../catalog/CatalogRepository'
 import { MockCatalog } from '../../catalog/mock/MockCatalog'
 import { clusterArchetypes } from '../../engine/clusters/clusters'
 import type { Clustering } from '../../engine/clusters/clusters'
-import { DEFAULT_CONFIG } from '../../engine/config'
+import { APP_ENGINE_CONFIG } from './engineConfig'
 
 // Loads the catalogue once and precomputes what every session reuses (m1-spec §3.2).
 // Clustering takes ~180 ms in the browser, so it runs once, while the Welcome screen is showing.
@@ -21,7 +21,7 @@ let pending: Promise<LoadedCatalogue> | null = null
 export function loadCatalogue(repo: CatalogRepository = new MockCatalog()): Promise<LoadedCatalogue> {
   pending ??= repo.getCatalogue().then((catalogue) => ({
     catalogue,
-    clustering: clusterArchetypes(catalogue, DEFAULT_CONFIG),
+    clustering: clusterArchetypes(catalogue, APP_ENGINE_CONFIG),
     archetypes: new Map(catalogue.archetypes.map((a) => [a.id, a])),
     venues: new Map(catalogue.venues.map((v) => [v.id, v])),
     offerings: new Map(catalogue.offerings.map((o) => [o.id, o])),

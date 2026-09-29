@@ -1,11 +1,11 @@
 import type { CravingSelection, GeoPoint, SessionContext } from '../../domain'
-import { DEFAULT_CONFIG } from '../../engine/config'
 import { buildPool } from '../../engine/context/pool'
 import { explainResult } from '../../engine/explain/explain'
 import type { Explanation } from '../../engine/explain/explain'
 import { createModel, initialState, replay, soloReducer, undo } from '../../engine/session/solo'
 import type { CardChoice, SoloEvent, SoloState } from '../../engine/session/types'
 import type { LoadedCatalogue } from './catalogueService'
+import { configForRules, CURRENT_RULES } from './engineConfig'
 
 // The ONLY app module that calls the engine's session API (m1-spec §3.2). The engine is a frozen
 // baseline: this adapter consumes it read-only and never changes its behaviour.
@@ -15,6 +15,8 @@ export interface SessionInputDTO {
   context: Omit<SessionContext, 'now' | 'diet'> & { now: string; diet: SessionContext['diet'] }
   craving: CravingSelection
   seed: number
+  /** Which engine rules the session was started under (engineConfig.ts). Absent = before the marker. */
+  rules?: number
 }
 
 export function toContext(dto: SessionInputDTO): SessionContext {
@@ -38,7 +40,23 @@ export function makeInput(
     },
     craving: { moods: [...craving.moods], intent: craving.intent },
     seed,
+    rules: CURRENT_RULES,
   }
+}
+
+type SettingsOnly = Pick<SessionContext, 'fulfilment' | 'budget' | 'diet'>
+
+/** True if the session was started with exactly these settings (diet compared as a set). */
+export function sameSettings(dto: SessionInputDTO, settings: SettingsOnly): boolean {
+  const c = dto.context
+  // Stored data can be corrupt: anything that isn't the expected shape simply doesn't match.
+  if (!c || !Array.isArray(c.diet)) return false
+  return (
+    c.budget === settings.budget &&
+    c.fulfilment === settings.fulfilment &&
+    c.diet.length === settings.diet.length &&
+    c.diet.every((d) => settings.diet.includes(d))
+  )
 }
 
 function model(loaded: LoadedCatalogue, dto: SessionInputDTO) {
@@ -48,7 +66,7 @@ function model(loaded: LoadedCatalogue, dto: SessionInputDTO) {
     context: toContext(dto),
     craving: dto.craving,
     seed: dto.seed,
-    config: DEFAULT_CONFIG,
+    config: configForRules(dto.rules),
   })
 }
 
@@ -103,7 +121,7 @@ export function explanationFor(state: SoloState, archetypeId?: string): Explanat
 
 /** How many dishes survive the hard filters, for the "filters too tight" warning (MVP_SPEC §23). */
 export function poolSize(loaded: LoadedCatalogue, dto: SessionInputDTO): { archetypes: number; offerings: number } {
-  const pool = buildPool(loaded.catalogue, toContext(dto), dto.craving, DEFAULT_CONFIG)
+  const pool = buildPool(loaded.catalogue, toContext(dto), dto.craving, configForRules(dto.rules))
   return { archetypes: pool.archetypeIds.length, offerings: pool.candidates.length }
 }
 

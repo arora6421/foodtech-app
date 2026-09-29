@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router'
 import { BUDGETS, DIET_CONSTRAINTS, FULFILMENTS, MOODS } from '../../domain'
-import type { Intent, Mood } from '../../domain'
+import type { Budget, Intent, Mood } from '../../domain'
 import { copy } from '../copy/en-GB'
 import { Icon } from '../components/primitives/Icon'
 import { Segmented } from '../components/primitives/Segmented'
@@ -17,6 +17,9 @@ import { useSolo } from '../state/soloSessionStore'
 // user starts.
 
 type SheetKind = 'diet' | 'budget' | 'eating' | null
+
+/** The next budget up, for the one-tap "raise budget" on a notice. Nothing is raised for 'any'. */
+const NEXT_BUDGET: Record<Budget, Budget | null> = { any: null, low: 'mid', mid: 'high', high: 'any' }
 
 export function CravingScreen() {
   const navigate = useNavigate()
@@ -41,6 +44,17 @@ export function CravingScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [status, eligibleCount, craving, diet, budget, fulfilment],
   )
+
+  // When the filters leave few or no dishes, offer the budget one step up, but only if it would add
+  // dishes. The person taps it: the budget is never raised for them, and the deck is never padded
+  // with dishes over the limit.
+  const raise = useMemo(() => {
+    const next = NEXT_BUDGET[budget]
+    if (!next || count === null || count >= FILTERS_TOO_TIGHT) return null
+    const n = eligibleCount(craving, { budget: next })
+    return n !== null && n > count ? { budget: next, count: n } : null
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [budget, count, eligibleCount, craving, diet, fulfilment])
 
   const toggleMood = (m: Mood) => {
     if (intent === 'no_idea') setIntent('normal')
@@ -147,6 +161,11 @@ export function CravingScreen() {
         <p className="notice" role="alert" style={{ marginTop: 12 }}>
           {copy.craving.none}
         </p>
+      )}
+      {raise && (
+        <button type="button" className="link-btn" style={{ marginTop: 8 }} onClick={() => setBudget(raise.budget)}>
+          {copy.craving.raiseBudget(copy.budget[raise.budget], raise.count)}
+        </button>
       )}
       <button
         type="button"

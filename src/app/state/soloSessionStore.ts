@@ -15,6 +15,7 @@ import {
   poolSize,
   precomputeBranch,
   restoreSession,
+  sameSettings,
   undoLast,
 } from '../services/engineAdapter'
 import type { SessionInputDTO } from '../services/engineAdapter'
@@ -45,10 +46,12 @@ export interface SoloSessionState {
   notQuite(): void
   undo(): void
   reset(): void
+  /** Throws the live session away because it can no longer be shown (see sessionGuard.ts). */
+  discard(reason: string): void
   /** Inspect a runner-up (or a pick-list dish). Passing chosen=true skips straight to the chosen state. */
   viewAlternative(archetypeId: string, chosen?: boolean): void
-  /** Dishes that survive the hard filters for this craving with the current settings. */
-  eligibleCount(craving: CravingSelection): number | null
+  /** Dishes that survive the hard filters for this craving with the current settings (or with `override` applied on top, to preview a change). */
+  eligibleCount(craving: CravingSelection, override?: Partial<Settings>): number | null
   chooseAlternative(): void
   returnToMatch(): void
 }
@@ -185,7 +188,14 @@ export function createSoloSessionStore(deps: SoloStoreDeps = defaultDeps) {
           const saved = readJSON('session', STORAGE_KEYS.session, isPersisted)
           if (saved) {
             let restored = false
-            if (saved.engineVersion === ENGINE_VERSION && saved.catalogueVersion === MOCK_CATALOGUE_VERSION) {
+            // A session started under other settings than the ones in force now is never resumed (the
+            // settings are remembered across tabs and visits; the session only lives in this tab).
+            const settingsMatch = !!saved.input?.context && sameSettings(saved.input, deps.settings())
+            if (
+              saved.engineVersion === ENGINE_VERSION &&
+              saved.catalogueVersion === MOCK_CATALOGUE_VERSION &&
+              settingsMatch
+            ) {
               // A stored session that can't be replayed (corrupted or edited storage) must not take the
               // whole app down on every reload: drop it and start fresh instead.
               try {
@@ -257,16 +267,23 @@ export function createSoloSessionStore(deps: SoloStoreDeps = defaultDeps) {
         setAnalyticsSession(null)
       },
 
+      discard(reason) {
+        if (!get().input) return
+        track('session_discarded', { reason, cardIndex: get().state?.swipes.length ?? 0 })
+        get().reset()
+      },
+
       viewAlternative(archetypeId, chosen = false) {
         const s = get().state
         if (!s?.result) return
         track('match_action', { action: chosen ? 'choose_alternative' : 'view_alternative', archetypeId })
         commit(s, s, { kind: 'alternative', archetypeId, chosen })
       },
-      eligibleCount(craving) {
+      eligibleCount(craving, override) {
         const { loaded, origin } = get()
         if (!loaded || !origin) return null
-        return poolSize(loaded, makeInput(origin, deps.now(), deps.settings(), craving, 0)).archetypes
+        const settings = { ...deps.settings(), ...override }
+        return poolSize(loaded, makeInput(origin, deps.now(), settings, craving, 0)).archetypes
       },
       chooseAlternative() {
         const { state: s, view } = get()

@@ -37,6 +37,7 @@ export const copy = {
     tooTight: (n: number) =>
       `Only ${n} ${n === 1 ? 'dish fits' : 'dishes fit'} these settings, so there's less to choose from. You can still carry on.`,
     none: 'No dishes match these settings. Try a wider budget or a different eating option.',
+    raiseBudget: (label: string, n: number) => `Raise budget: ${label} (${n} ${n === 1 ? 'dish' : 'dishes'})`,
   },
   moods: {
     spicy: 'Spicy',

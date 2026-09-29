@@ -10,6 +10,7 @@ import { IssueTile } from '../components/food/IssueTile'
 import { DishImage, MenuMark, PlateArt } from '../components/food/DishImage'
 import { DirectionsSheet, OrderSheet } from '../components/handoff/HandoffSheets'
 import { Icon } from '../components/primitives/Icon'
+import { useSessionGuard } from '../hooks/useSessionGuard'
 import { track } from '../services/analytics'
 import { useSaved } from '../state/savedStore'
 import { useSolo } from '../state/soloSessionStore'
@@ -132,7 +133,9 @@ export function MatchScreen() {
   const [landed, setLanded] = useState(false)
   const [actionsReveal] = useState(() => revealFor(reduced ? 'reduced' : 'full').actions)
 
-  const model = loaded && state ? matchModel(loaded, state, view) : null
+  // Checked in the render that would show the match: a stale or diet-breaking session shows nothing.
+  const problem = useSessionGuard()
+  const model = !problem && loaded && state ? matchModel(loaded, state, view) : null
   const focusKey = model ? `${model.mode}:${model.hero.archetypeId}` : ''
   useEffect(() => {
     headingRef.current?.focus()
@@ -144,7 +147,7 @@ export function MatchScreen() {
         <p className="t-body muted">{copy.welcome.loading}</p>
       </main>
     )
-  if (!state || !loaded) return <Navigate to="/craving" replace />
+  if (problem || !state || !loaded) return <Navigate to="/craving" replace />
   if (!state.result || !model) return <Navigate to="/deck" replace />
 
   const hero = model.hero

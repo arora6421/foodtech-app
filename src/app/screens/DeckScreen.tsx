@@ -6,6 +6,7 @@ import { DeckTopBar } from '../components/deck/DeckTopBar'
 import { SwipeDeck } from '../components/deck/SwipeDeck'
 import type { DeckMove, Verdict } from '../components/deck/SwipeDeck'
 import { useImagePrefetch } from '../hooks/useImagePrefetch'
+import { useSessionGuard } from '../hooks/useSessionGuard'
 import { soloSessionStore, useSolo } from '../state/soloSessionStore'
 import { currentCard, nextCardImages, progressModel } from '../state/viewModels'
 
@@ -22,6 +23,8 @@ export function DeckScreen() {
   const pick = useSolo((s) => s.pick)
   const decide = useSolo((s) => s.decide)
   const undo = useSolo((s) => s.undo)
+  // Checked in the render that would show a card: a stale or diet-breaking session shows nothing.
+  const problem = useSessionGuard()
 
   const [move, setMove] = useState<DeckMove>({ kind: 'none' })
   // The final swipe's card finishes its flight before the match is revealed.
@@ -87,7 +90,7 @@ export function DeckScreen() {
         <p className="t-body muted">{copy.welcome.loading}</p>
       </main>
     )
-  if (!state || !loaded) return <Navigate to="/craving" replace />
+  if (problem || !state || !loaded) return <Navigate to="/craving" replace />
   if (state.result && !finishing) return <Navigate to="/match" replace />
   if (!state.current && !state.result) return <Navigate to="/craving" replace />
 
