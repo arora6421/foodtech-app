@@ -115,11 +115,11 @@ export const OFFERINGS: Offering[] = [
   offer('cedar-and-sumac', 'chicken-shawarma-wrap', 'Chicken Shawarma Wrap', 895, 'Toum, pickles, chips inside.'),
   offer('cedar-and-sumac', 'falafel-wrap', 'Falafel Wrap', 795, 'Crisp falafel, tahini, parsley.'),
   offer('cedar-and-sumac', 'mezze-platter', 'Mezze for One', 1450, 'Hummus, tabbouleh, halloumi, pitta.'),
-  offer('cedar-and-sumac', 'chicken-shawarma-bowl', 'Shawarma Bowl', 1150, 'Chicken over fattoush, pomegranate.'),
+  offer('cedar-and-sumac', 'chicken-shawarma-bowl', 'Shawarma Bowl', 1150, 'Chicken over fattoush, pomegranate.', { dietary: { glutenFree: false } }), // fattoush is made with toasted pitta
   // Za'atar Yard
   offer('zaatar-yard', 'falafel-wrap', 'Za’atar Falafel Wrap', 750, 'Za’atar flatbread, falafel, pickles.'),
   offer('zaatar-yard', 'chicken-shawarma-wrap', 'Garlic Chicken Shawarma', 850, 'Heavy on the toum.'),
-  offer('zaatar-yard', 'chicken-shawarma-bowl', 'Chicken Fattoush Bowl', 1095, 'Crunchy salad, sumac, shawarma chicken.'),
+  offer('zaatar-yard', 'chicken-shawarma-bowl', 'Chicken Fattoush Bowl', 1095, 'Crunchy salad, sumac, shawarma chicken.', { dietary: { glutenFree: false } }), // fattoush: toasted pitta
   offer('zaatar-yard', 'mezze-platter', 'Mezze Box', 1295, 'Dips, salads and warm pitta.'),
   // Anatolia Grill
   offer('anatolia-grill', 'adana-kebab', 'Adana Kebab Plate', 1795, 'Charcoal-grilled, pul biber, sumac onions.'),
@@ -155,7 +155,7 @@ export const OFFERINGS: Offering[] = [
   offer('morning-ground-cafe', 'full-english', 'The Full English', 1250, 'Bacon, sausage, eggs, beans, toast.'),
   offer('morning-ground-cafe', 'avocado-eggs-sourdough', 'Smashed Avo & Poached Eggs', 1095, 'Sourdough, chilli, lime.'),
   offer('morning-ground-cafe', 'buttermilk-pancakes', 'Buttermilk Stack', 1050, 'Maple, berries, whipped butter.'),
-  offer('morning-ground-cafe', 'turkish-eggs', 'Turkish Eggs on Sourdough', 1150, 'Garlic yoghurt, chilli butter.'),
+  offer('morning-ground-cafe', 'turkish-eggs', 'Turkish Eggs on Sourdough', 1150, 'Garlic yoghurt, chilli butter.', { dietary: { glutenFree: false } }), // served on sourdough
   // The Sticky Spoon
   offer('the-sticky-spoon', 'sticky-toffee-pudding', 'Sticky Toffee Pud & Custard', 750, 'A big portion.'),
   offer('the-sticky-spoon', 'steak-and-ale-pie', 'Steak & Ale Pie Box', 1395, 'Pie, mash, peas, gravy.'),
@@ -189,11 +189,11 @@ export const OFFERINGS: Offering[] = [
   offer('burrito-norte', 'fish-tacos', 'Fish Taco Trio', 1050, 'Three tacos, pickled onion.'),
   offer('burrito-norte', 'birria-tacos', 'Birria Tacos', 1295, 'Four tacos, consomé.'),
   // Scotch Bonnet Kitchen
-  offer('scotch-bonnet-kitchen', 'jerk-chicken', 'Jerk Chicken, Rice & Peas', 1350, 'Pimento-smoked, festival on the side.'),
+  offer('scotch-bonnet-kitchen', 'jerk-chicken', 'Jerk Chicken, Rice & Peas', 1350, 'Pimento-smoked, festival on the side.', { dietary: { glutenFree: false } }), // festival: a fried flour dumpling
   offer('scotch-bonnet-kitchen', 'curry-mutton', 'Curry Mutton', 1695, 'On the bone, slow-cooked.'),
   offer('scotch-bonnet-kitchen', 'ital-stew', 'Ital Stew', 1150, 'Coconut, beans, pumpkin, thyme.'),
   // Island Morning
-  offer('island-morning', 'ackee-and-saltfish', 'Ackee & Saltfish', 1250, 'Fried dumplings, plantain.'),
+  offer('island-morning', 'ackee-and-saltfish', 'Ackee & Saltfish', 1250, 'Fried dumplings, plantain.', { dietary: { glutenFree: false } }), // fried dumplings are made with flour
   offer('island-morning', 'jerk-chicken', 'Quarter Jerk Chicken', 1195, 'Rice & peas, slaw.'),
   offer('island-morning', 'ital-stew', 'Ital Stew Bowl', 1050, 'Rice, stew, greens.'),
   // Ọ̀nà Kitchen
@@ -207,5 +207,5 @@ export const OFFERINGS: Offering[] = [
   offer('kumasi-corner', 'red-red', 'Red-Red & Plantain', 1095, 'Black-eyed beans in palm oil, sweet plantain.'),
   offer('kumasi-corner', 'jollof-rice', 'Jollof Rice & Chicken', 1250, 'With shito on the side.'),
   offer('kumasi-corner', 'beef-suya', 'Beef Suya', 1250, 'Yaji-spiced skewers, onion, tomato.'),
-  offer('kumasi-corner', 'puff-puff', 'Puff-Puff & Chilli Honey', 595, 'Sweet, hot, sticky.'),
+  offer('kumasi-corner', 'puff-puff', 'Puff-Puff & Chilli Honey', 595, 'Sweet, hot, sticky.', { dietary: { vegan: false } }), // chilli honey; still vegetarian
 ]

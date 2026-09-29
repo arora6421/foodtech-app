@@ -1,5 +1,6 @@
 import { AXES, CUISINES, LEVELS, MOOD_TAGS, CatalogueSchema, dietaryIssues, distanceMiles, effectiveDietary } from '../domain'
 import type { Catalogue, GeoPoint, MoodTag } from '../domain'
+import { allergenIssues, contentIssues } from './dietaryContent'
 
 // Integrity and coverage checks for any catalogue (MVP_SPEC §5.3, §13.1).
 // Integrity problems are errors; coverage is reported as numbers so tests can gate on them.
@@ -72,6 +73,11 @@ export function validateCatalogue(catalogue: Catalogue, origin: GeoPoint): Valid
     for (const issue of dietaryIssues(effectiveDietary(a.dietary, o.overrides?.dietary), a.proteins)) {
       errors.push(`offering ${o.id}: effective dietary: ${issue}`)
     }
+    // Flags against what the dish is said to contain (ingredients, name, description, allergens).
+    const effective = effectiveDietary(a.dietary, o.overrides?.dietary)
+    const dish = { archetypeName: a.name, keyIngredients: a.keyIngredients, offeringName: o.name, offeringDescription: o.description }
+    for (const issue of contentIssues(effective, dish)) errors.push(`offering ${o.id}: ${issue}`)
+    for (const issue of allergenIssues(effective, o.overrides?.declaredAllergens ?? a.declaredAllergens ?? [])) errors.push(`offering ${o.id}: ${issue}`)
   }
 
   const offeredArchetypes = new Set(offerings.map((o) => o.archetypeId))
