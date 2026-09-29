@@ -21,6 +21,10 @@ const PHONES = [
   { name: 'iPhone 14 390×844', width: 390, height: 844 },
   { name: 'iPhone Pro Max 430×932', width: 430, height: 932 },
   { name: 'small 320×568', width: 320, height: 568 },
+  // What a phone browser actually leaves for the page, with its address bar and toolbars showing.
+  { name: 'iPhone 14 Safari 390×664', width: 390, height: 664 },
+  { name: 'iPhone SE Safari 375×548', width: 375, height: 548 },
+  { name: 'Android Chrome 360×660', width: 360, height: 660 },
 ]
 
 if (!process.argv.includes('--no-build')) {
@@ -110,8 +114,12 @@ try {
     await page.waitForSelector('.swipe-card .dish-card')
     const size = await page.evaluate(() => {
       const r = document.querySelector('.swipe-card:not([inert]) .dish-card').getBoundingClientRect()
-      return { w: Math.round(r.width), h: Math.round(r.height) }
+      // The deck must fit the screen: Nope/Yes and the links stay in view without scrolling.
+      const scroll = document.documentElement.scrollHeight - innerHeight
+      return { w: Math.round(r.width), h: Math.round(r.height), scroll }
     })
+    const deckFailures =
+      size.scroll > 1 ? [`deck page scrolls ${size.scroll}px: the buttons are pushed off screen`] : []
     // 2. Every dish at that size.
     await page.goto(`http://localhost:${PORT}/?debug=cards&images=review&w=${size.w}&h=${size.h}${plateParam}`, {
       waitUntil: 'load',
@@ -119,9 +127,10 @@ try {
     await page.waitForSelector('[data-gallery-ready]')
     await page.evaluate(() => document.fonts.ready)
     const r = await page.evaluate(CHECK)
+    r.failures.unshift(...deckFailures)
     failed += r.failures.length
     console.log(
-      `${phone.name.padEnd(24)} card ${size.w}×${size.h} · plate ${r.plate}px · ${r.cards} cards · name sizes ${JSON.stringify(r.tiers)} · ${r.failures.length ? `${r.failures.length} FAIL` : 'all clear'}`,
+      `${phone.name.padEnd(26)} card ${size.w}×${size.h} · plate ${r.plate}px · ${r.cards} cards · name sizes ${JSON.stringify(r.tiers)} · ${r.failures.length ? `${r.failures.length} FAIL` : 'all clear'}`,
     )
     for (const f of r.failures.slice(0, 12)) console.log(`    ${f}`)
     await page.close()

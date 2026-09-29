@@ -1003,6 +1003,22 @@
     margin-top: auto;
   }
 
+  /* ── Short screens (a small phone's browser, toolbars showing: ~550px) ─────────────────── */
+  /* The deck must fit without scrolling, and the card can't get any shorter without losing its
+     text, so the space around it tightens instead (targets stay at least 44px). */
+  @media (max-height: 600px) {
+    .deck-screen {
+      padding-top: calc(env(safe-area-inset-top, 0px) + 6px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
+    }
+    .deck-screen .deck-stack {
+      margin: 6px 0 10px;
+    }
+    .deck-screen .vote {
+      min-height: 48px;
+    }
+  }
+
   /* ── Narrow screens (under 300px: a phone at 200% zoom) ────────────────────────────── */
   /* Readable text beats the fixed layout: everything wraps, the plate (decorative) steps aside so
      it can never cover text, the price becomes an inline sticker, and the card scrolls if it must. */
