@@ -299,6 +299,30 @@ async function walk(browser, vp) {
     await page.waitForSelector('.issue-open')
     results.push(await audit(page, 'Match › pick list'))
   })
+
+  // Settings that leave only a few dishes (vegan, up to £10, going out), so the "fewer than 8 dishes"
+  // notice and its raise-budget link show. Settings are read from localStorage at load, so reload.
+  const tightSettings = async () => {
+    await page.evaluate(() =>
+      localStorage.setItem('fde.settings.v1', JSON.stringify({ diet: ['vegan'], budget: 'low', fulfilment: 'go_out' })),
+    )
+    await go('/craving')
+    await page.waitForSelector('.notice')
+  }
+  await step('Craving › tight-pool notice', async () => {
+    await tightSettings()
+    // If the link ever stops showing for these settings this step fails, so the state can't quietly drop out of the audit.
+    await page.waitForSelector('::-p-text(Raise budget)', { timeout: 5000 })
+    results.push(await audit(page, 'Craving › tight-pool notice'))
+  })
+  await step('Craving › Budget sheet', async () => {
+    await tightSettings()
+    await (await page.$$('.filter-row'))[1].click() // Diet, Budget, Eating
+    await page.waitForSelector('[role="dialog"]')
+    await page.waitForSelector('::-p-text(priced at or under your limit)', { timeout: 5000 })
+    results.push(await audit(page, 'Craving › Budget sheet'))
+    await page.keyboard.press('Escape')
+  })
   await ctx.close()
   return results
 }

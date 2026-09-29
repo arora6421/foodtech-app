@@ -5,7 +5,7 @@ import { ARCHETYPES } from './archetypes'
 import { OFFERINGS } from './offerings'
 import { VENUES } from './venues'
 
-export const MOCK_CATALOGUE_VERSION = 'mock-1.0.0'
+export const MOCK_CATALOGUE_VERSION = 'mock-1.0.1'
 
 export const MOCK_CATALOGUE: Catalogue = {
   version: MOCK_CATALOGUE_VERSION,

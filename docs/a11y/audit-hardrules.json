@@ -1,6 +1,6 @@
 {
   "label": "hardrules",
-  "date": "2026-09-29T16:37:29.749Z",
+  "date": "2026-09-29T16:49:30.803Z",
   "viewports": [
     {
       "viewport": "phone 390×844",
@@ -167,6 +167,36 @@
           "targets": [],
           "keyboard": {
             "stops": 1,
+            "problems": []
+          }
+        },
+        {
+          "screen": "Craving › tight-pool notice",
+          "axe": [],
+          "axeRules": 21,
+          "axeIncomplete": [
+            "color-contrast"
+          ],
+          "reflow": null,
+          "clipped": [],
+          "targets": [],
+          "keyboard": {
+            "stops": 15,
+            "problems": []
+          }
+        },
+        {
+          "screen": "Craving › Budget sheet",
+          "axe": [],
+          "axeRules": 22,
+          "axeIncomplete": [
+            "color-contrast"
+          ],
+          "reflow": null,
+          "clipped": [],
+          "targets": [],
+          "keyboard": {
+            "stops": 6,
             "problems": []
           }
         }
@@ -339,6 +369,36 @@
             "stops": 1,
             "problems": []
           }
+        },
+        {
+          "screen": "Craving › tight-pool notice",
+          "axe": [],
+          "axeRules": 21,
+          "axeIncomplete": [
+            "color-contrast"
+          ],
+          "reflow": null,
+          "clipped": [],
+          "targets": [],
+          "keyboard": {
+            "stops": 15,
+            "problems": []
+          }
+        },
+        {
+          "screen": "Craving › Budget sheet",
+          "axe": [],
+          "axeRules": 22,
+          "axeIncomplete": [
+            "color-contrast"
+          ],
+          "reflow": null,
+          "clipped": [],
+          "targets": [],
+          "keyboard": {
+            "stops": 6,
+            "problems": []
+          }
         }
       ]
     },
@@ -507,6 +567,36 @@
           "targets": [],
           "keyboard": {
             "stops": 1,
+            "problems": []
+          }
+        },
+        {
+          "screen": "Craving › tight-pool notice",
+          "axe": [],
+          "axeRules": 21,
+          "axeIncomplete": [
+            "color-contrast"
+          ],
+          "reflow": null,
+          "clipped": [],
+          "targets": [],
+          "keyboard": {
+            "stops": 15,
+            "problems": []
+          }
+        },
+        {
+          "screen": "Craving › Budget sheet",
+          "axe": [],
+          "axeRules": 22,
+          "axeIncomplete": [
+            "color-contrast"
+          ],
+          "reflow": null,
+          "clipped": [],
+          "targets": [],
+          "keyboard": {
+            "stops": 6,
             "problems": []
           }
         }

@@ -2,7 +2,7 @@
  "schema": 1,
  "policy": "Frozen M0 engine baseline. Do not regenerate because numbers moved; a moved number means the engine changed. Overwriting requires product-owner approval, recorded in history.",
  "engineVersion": "0.1.0",
- "catalogueVersion": "mock-1.0.0",
+ "catalogueVersion": "mock-1.0.1",
  "configHash": "17c788fa665ba2de",
  "fast": {
   "seeds": 50,
