@@ -25,6 +25,8 @@ const PHONES = [
   { name: 'iPhone 14 Safari 390×664', width: 390, height: 664 },
   { name: 'iPhone SE Safari 375×548', width: 375, height: 548 },
   { name: 'Android Chrome 360×660', width: 360, height: 660 },
+  // Opened from the home screen (no toolbars): 844 less the status bar (47) and home indicator (34).
+  { name: 'iPhone 14 home screen 390×763', width: 390, height: 763 },
 ]
 
 if (!process.argv.includes('--no-build')) {
@@ -84,6 +86,18 @@ const CHECK = () => {
         failures.push(`${dish}: "${text}" spills out of the card`)
     }
   }
+  // One layout per phone: the plate is the same size and in the same place on every card.
+  const plates = [...document.querySelectorAll('.gallery-slot')].map((slot) => {
+    const c = slot.querySelector('.dish-card').getBoundingClientRect()
+    const p = slot.querySelector('.card-plate').getBoundingClientRect()
+    return { dish: slot.dataset.dish, w: p.width, x: p.left - c.left, y: p.top - c.top }
+  })
+  for (const p of plates.slice(1))
+    for (const k of ['w', 'x', 'y'])
+      if (Math.abs(p[k] - plates[0][k]) > 1)
+        failures.push(
+          `${p.dish}: plate ${k} ${Math.round(p[k])}px, not ${Math.round(plates[0][k])}px as on the other cards`,
+        )
   const plateBox = document.querySelector('.gallery-slot .card-plate')?.getBoundingClientRect()
   return {
     cards: document.querySelectorAll('.gallery-slot').length,

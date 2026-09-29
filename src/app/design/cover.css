@@ -35,7 +35,7 @@
      the plate) · bottom (pills, venue, allergens: fixed height). Only the middle flexes, and the plate
      is sized from it, so on a given phone the plate is the same size and place on every card. */
   .dish-card.cover {
-    container-type: size;
+    container: card / size;
     padding: 20px 20px 16px;
     box-shadow: var(--shadow-card);
   }
@@ -223,6 +223,79 @@
     border-radius: var(--radius-control);
     background: var(--color-raised);
     font: 500 14px/1.35 var(--font-text);
+  }
+
+  /* ── Short cards (a phone browser with its toolbars showing) ────────────────────────── */
+  /* The plate comes first: when the card is short, the fixed text zones give up height so the
+     plate (sized from what's left) stays large. In order: the name is set smaller (its zone and its
+     type shrink together, so two lines and their descenders still fit), the pills get smaller, then
+     the top row, the venue line and the card's own margins tighten. All three Inside ingredients
+     stay. One layout per phone still: the steps depend only on the card's height. */
+  @container card (max-height: 580px) {
+    .card-name-zone {
+      --name-scale: 0.84;
+      margin-top: 10px;
+    }
+    .card-pills {
+      gap: 5px;
+      min-height: calc(2 * 24px + 5px);
+      margin: 8px 0 10px;
+    }
+    .pill {
+      padding: 3px 10px;
+      font-size: 12px;
+    }
+  }
+  @container card (max-height: 470px) {
+    .card-top {
+      margin-top: -4px;
+      padding-bottom: 7px;
+    }
+    .card-kind {
+      font-size: 14px;
+    }
+    .card-no {
+      font-size: 22px;
+    }
+    .card-name-zone {
+      --name-scale: 0.65;
+      margin-top: 8px;
+    }
+    .card-inside li {
+      font-size: 15px;
+    }
+    .card-pills {
+      margin: 6px 0;
+    }
+    .card-where {
+      padding-top: 8px;
+    }
+    .card-venue {
+      font-size: 15px;
+    }
+    .card-bottom {
+      margin-bottom: -4px;
+    }
+  }
+  @container card (max-height: 580px) {
+    .card-name-zone {
+      height: calc(16.2cqw * 2.05 * var(--name-scale));
+    }
+    .card-name {
+      font-size: calc(16.2cqw * var(--name-scale));
+    }
+    .card-name.name-l {
+      font-size: calc(13.6cqw * var(--name-scale));
+    }
+    .card-name.name-m {
+      font-size: calc(11.4cqw * var(--name-scale));
+    }
+    .card-name.name-s {
+      font-size: calc(9.6cqw * var(--name-scale));
+    }
+    .card-name.name-xs {
+      font-size: calc(8.2cqw * var(--name-scale));
+    }
   }
 
   /* The plate itself: a cutout shown whole with a soft shadow, or the no-photo outline. */
