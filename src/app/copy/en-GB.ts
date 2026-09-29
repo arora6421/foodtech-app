@@ -63,6 +63,7 @@ export const copy = {
     dietBody:
       'We only show dishes that fit. Allergens are shown only when a venue lists them; always check with the venue.',
     budgetTitle: 'Budget',
+    budgetBody: 'We only show dishes priced at or under your limit.',
     eatingTitle: 'Eating',
     done: 'Done',
     close: 'Close',

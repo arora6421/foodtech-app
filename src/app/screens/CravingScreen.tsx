@@ -196,6 +196,9 @@ export function CravingScreen() {
         </button>
       </Sheet>
       <Sheet open={sheet === 'budget'} title={copy.sheets.budgetTitle} onClose={() => setSheet(null)}>
+        <p className="t-body muted" style={{ margin: '0 0 12px' }}>
+          {copy.sheets.budgetBody}
+        </p>
         <Segmented
           label={copy.sheets.budgetTitle}
           options={BUDGETS.map((b) => ({ value: b, label: copy.budget[b] }))}

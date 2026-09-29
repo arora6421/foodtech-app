@@ -93,3 +93,13 @@ describe('the "raise budget" button', () => {
     expect(s.model.pool.candidates.every((c) => c.offering.pricePence <= 1000)).toBe(true)
   })
 })
+
+describe('the Budget sheet', () => {
+  it('states the rule: only dishes at or under the limit', async () => {
+    const user = userEvent.setup()
+    set({ diet: [], budget: 'low', fulfilment: 'either' })
+    renderCraving()
+    await user.click(screen.getByRole('button', { name: /^Budget: Up to £10/ }))
+    expect(await screen.findByText('We only show dishes priced at or under your limit.')).toBeTruthy()
+  })
+})
