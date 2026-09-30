@@ -8,11 +8,14 @@
 //   · clipping: text cut off by an overflow-hidden box (ellipsis or hidden overflow)
 //   · target size: interactive elements under 24 px (WCAG 2.5.8 AA) and under 44 px (our bar)
 //   · keyboard: Tab through everything; each stop must show a focus indicator and not be hidden
-// Writes docs/a11y/audit-<label>.json and prints a summary.
+// Writes docs/a11y/audit-<label>.json and prints a summary. Exits 1 on any issue (errored step, axe
+// violation, reflow, clipping, undersized target, keyboard problem); axe "needs review" items (colour
+// contrast over the textured background) appear on every screen and do not count.
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import puppeteer from 'puppeteer-core'
 import { build, preview } from 'vite'
+import { issueLines } from './a11y-summary.mjs'
 
 const label = process.argv[2] ?? 'current'
 const require = createRequire(import.meta.url)
@@ -346,15 +349,7 @@ let issues = 0
 for (const { viewport, screens } of report.viewports) {
   console.log(`\n=== ${viewport}`)
   for (const s of screens) {
-    const lines = [
-      ...(s.error ? [`STEP FAILED: ${s.error}`] : []),
-      ...s.axe.map((v) => `axe ${v.impact}: ${v.id} (${v.help}) at ${v.nodes.join(' | ')}`),
-      ...(s.reflow ? [`reflow: ${s.reflow}`] : []),
-      ...s.clipped.map((c) => `clipped: ${c}`),
-      ...s.targets.filter((t) => t.belowAA).map((t) => `target below 24px (AA fail): ${t.el} ${t.w}×${t.h}`),
-      ...s.targets.filter((t) => !t.belowAA).map((t) => `target below 44px: ${t.el} ${t.w}×${t.h}`),
-      ...s.keyboard.problems.map((p) => `keyboard: ${p}`),
-    ]
+    const lines = issueLines(s)
     issues += lines.length
     console.log(
       `${s.screen.padEnd(24)} ${lines.length ? `${lines.length} issue(s)` : 'clean'} · ${s.keyboard.stops} tab stops · ${s.axeRules ?? 0} axe rules${s.axeIncomplete?.length ? ` (needs review: ${s.axeIncomplete.join(', ')})` : ''}`,
@@ -366,3 +361,10 @@ console.log(`\n${issues} issue(s) in total`)
 mkdirSync('docs/a11y', { recursive: true })
 writeFileSync(`docs/a11y/audit-${label}.json`, JSON.stringify(report, null, 2))
 console.log(`Wrote docs/a11y/audit-${label}.json`)
+
+// The report is written and the browser and server are closed, so the process ends on its own with
+// this code. Only issues count; "needs review" items were never added to them (a11y-summary.mjs).
+if (issues > 0) {
+  console.error(`A11Y AUDIT FAILED: ${issues} issue(s). Details above and in docs/a11y/audit-${label}.json`)
+  process.exitCode = 1
+}

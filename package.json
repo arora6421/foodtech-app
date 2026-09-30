@@ -18,7 +18,9 @@
     "test:watch": "vitest",
     "sim": "tsx src/sim/cli.ts",
     "check": "npm run typecheck && npm run lint && npm run test",
-    "sim:baseline": "tsx src/sim/baseline.ts"
+    "sim:baseline": "tsx src/sim/baseline.ts",
+    "test:scripts": "node --test scripts/*.test.mjs",
+    "a11y": "node scripts/a11y-audit.mjs"
   },
   "dependencies": {
     "motion": "13.4.3",

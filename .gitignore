@@ -13,3 +13,6 @@ src/app/debug/review-images/
 # Crave design handoff: the brief and mockup HTML are tracked; the designer's mockup images and the zip are not
 docs/design/crave-design-handoff/mockups/images/
 docs/design/crave-design-handoff.zip
+
+# Default output of `npm run a11y` (the labelled audits in docs/a11y are the tracked records)
+docs/a11y/audit-current.json
