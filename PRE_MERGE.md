@@ -29,7 +29,9 @@ Run from the repo root. Every step must pass; if one fails, stop and report rath
   ```
 
   `npm run a11y` must exit 0 and print `0 issue(s) in total`. It exits 1 on an errored step, an axe
-  violation, horizontal overflow, clipped text, an undersized target or a keyboard problem. The
+  violation, horizontal overflow, clipped text, an undersized target or a keyboard problem. Overflow
+  is measured against the width the audit set (390, 320 or 195 px), not the width the browser
+  reports: phone emulation widens its layout to fit wide content and would hide it. The
   `needs review: color-contrast` notes on every screen are expected and do not fail it (contrast is
   covered by `src/app/services/contrast.test.ts`). A screen state that is not walked by
   `scripts/a11y-audit.mjs` is not audited: if you add one, add a step for it.
@@ -39,4 +41,17 @@ Run from the repo root. Every step must pass; if one fails, stop and report rath
 - [ ] **Squash-merge**, so the preview-only test images never enter `main`'s history.
 - [ ] **Delete the preview-only images first**: `src/app/debug/preview-images/` and
       `src/app/debug/previewImages.ts` (and anything importing it).
+- [ ] **Confirm no test cutout images are in the diff.** Run `git diff main --stat` and check that none
+      of the preview-only images appear anywhere in it. They are the six `.webp` files in
+      `src/app/debug/preview-images/` plus `src/app/debug/previewImages.ts` (they are WebP, not PNG).
+      A quick filter, which must print only the expected files below:
+
+  ```
+  git diff main --name-only | grep -Ei 'preview|\.(png|webp|jpe?g|avif|gif)$'
+  ```
+
+  Expected output, and nothing else: the home-screen icons in `public/` (`apple-touch-icon.png`,
+  `icon-192.png`, `icon-512.png`) and `src/app/design/textures/grain-print.png`. Anything else
+  image-like, or anything with `preview` in its path: stop and check. (`public/favicon.svg` is also
+  new and fine; the filter doesn't match SVG.)
 - [ ] The product owner has approved the redesign on the preview.

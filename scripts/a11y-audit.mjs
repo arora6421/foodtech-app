@@ -30,8 +30,11 @@ const VIEWPORTS = [
 ]
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
-// Runs in the page: layout checks that axe doesn't cover.
-const LAYOUT_CHECKS = () => {
+// Runs in the page: layout checks that axe doesn't cover. `screenWidth` is the width this audit
+// asked for (the viewport it set), passed in because the page can't be trusted to report it: phone
+// emulation widens the layout viewport to fit wide content, up to 4× the screen, so `innerWidth`
+// then agrees with the overflow and hides it.
+const LAYOUT_CHECKS = (screenWidth) => {
   const describe = (el) => {
     const id = el.id ? `#${el.id}` : ''
     const cls =
@@ -53,15 +56,19 @@ const LAYOUT_CHECKS = () => {
   }
   const out = { reflow: null, clipped: [], targets: [] }
   const doc = document.scrollingElement
-  if (doc.scrollWidth > innerWidth + 1)
-    out.reflow = `page scrolls sideways: ${doc.scrollWidth}px wide in a ${innerWidth}px viewport`
+  if (innerWidth > screenWidth + 1 || doc.scrollWidth > screenWidth + 1)
+    out.reflow = `page is ${Math.max(innerWidth, doc.scrollWidth)}px wide on a ${screenWidth}px screen: it scrolls sideways, or the browser widened its layout to fit`
   // The app clips horizontal overflow (so a flung card can't widen the page), which also hides
   // real reflow failures from scrollWidth. So: anything visible that extends past the screen edge.
-  // What's actually visible: an element's box cut down by every ancestor that clips its overflow
+  // What's actually visible: an element's box cut down by every ancestor that clips its overflow,
+  // except the screen's own root (`main`, or a sheet): a screen clipping its own content is exactly
+  // how a too-wide element gets cut off unseen, so it can't excuse it. Components inside the screen
+  // (the deck card clipping a plate that deliberately bleeds off its edge) still can.
   // (e.g. the deck card clips the plate that deliberately bleeds off its edge).
   const visibleRect = (el) => {
     let { left, right } = el.getBoundingClientRect()
-    for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) {
+    const root = el.closest('main, [role="dialog"]')
+    for (let a = el.parentElement; a && a !== document.body && a !== root; a = a.parentElement) {
       if (/hidden|clip|auto|scroll/.test(getComputedStyle(a).overflowX)) {
         const b = a.getBoundingClientRect()
         left = Math.max(left, b.left)
@@ -72,13 +79,17 @@ const LAYOUT_CHECKS = () => {
   }
   const past = []
   for (const el of document.querySelectorAll('main *, [role="dialog"] *')) {
-    if (!visible(el) || el.closest('.swipe-card[inert], .deck-edge, .dish-media')) continue
+    // The Welcome plates are decorative and bleed off the edge on purpose (no text, aria-hidden).
+    if (!visible(el) || el.closest('.swipe-card[inert], .deck-edge, .dish-media, .welcome-plate')) continue
     const r = visibleRect(el)
     if (r.right <= r.left) continue // clipped away entirely
-    if (r.right > innerWidth + 1 || r.left < -1)
+    if (r.right > screenWidth + 1 || r.left < -1)
       past.push(`${describe(el)} spans ${Math.round(r.left)}–${Math.round(r.right)}px`)
   }
-  if (past.length) out.reflow = `${past.length} element(s) past the screen edge, e.g. ${past.slice(0, 3).join('; ')}`
+  if (past.length) {
+    const found = `${past.length} element(s) past the screen edge, e.g. ${past.slice(0, 3).join('; ')}`
+    out.reflow = out.reflow ? `${out.reflow}. ${found}` : found // keep the page-level cause if there is one
+  }
   // Visual checks count everything a sighted user sees, including aria-hidden text (the card's
   // visible rows are aria-hidden because its label covers screen readers, but zoom users read them).
   const seen = (el) => {
@@ -194,7 +205,7 @@ async function audit(page, screen) {
       })),
     }
   })
-  const layout = await page.evaluate(LAYOUT_CHECKS)
+  const layout = await page.evaluate(LAYOUT_CHECKS, page.viewport().width)
   const keyboard = await keyboardWalk(page)
   return { screen, axe: axe.violations, axeRules: axe.rules, axeIncomplete: axe.incomplete, ...layout, keyboard }
 }
