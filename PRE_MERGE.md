@@ -2,14 +2,20 @@
 
 Run from the repo root. Every step must pass; if one fails, stop and report rather than working around it.
 
-- [ ] **1. Typecheck, lint and the full test suite** (about 1 minute)
+- [ ] **1. Typecheck, lint, the full test suite, and the preview-images guard** (about 1 minute)
 
   ```
-  npm run check
+  npm run check:merge
   ```
 
-  Includes the golden baseline test (`src/sim/baseline.test.ts`), the diet and budget grids, and the
-  catalogue validation.
+  That is `npm run check` (typecheck, lint, all tests, including the golden baseline test, the diet
+  and budget grids and the catalogue validation) followed by `npm run check:no-preview-images`,
+  which **fails if `src/app/debug/preview-images/` or `src/app/debug/previewImages.ts` still exists**
+  (and names any source file that still references them).
+
+  On `cover-story` the guard fails until the preview-only images are deleted (see "Before merging"
+  below), by design: the branch needs them for the Vercel preview. Day to day, `npm run check` is
+  the check to run; `check:merge` is the merge gate.
 
 - [ ] **2. Baseline guard, full comparison** (about 4 minutes)
 
@@ -39,10 +45,13 @@ Run from the repo root. Every step must pass; if one fails, stop and report rath
 ## Before merging `cover-story` into `main`
 
 - [ ] **Squash-merge**, so the preview-only test images never enter `main`'s history.
-- [ ] **Delete the preview-only images first**: `src/app/debug/preview-images/` and
-      `src/app/debug/previewImages.ts` (and anything importing it).
-- [ ] **Confirm no test cutout images are in the diff.** Run `git diff main --stat` and check that none
-      of the preview-only images appear anywhere in it. They are the six `.webp` files in
+- [ ] **Delete the preview-only images first**, before running step 1: `src/app/debug/preview-images/`
+      and `src/app/debug/previewImages.ts`, and the block in `src/app/main.tsx` that loads them. Step 1
+      then passes; until you do, `check:merge` blocks the merge.
+- [ ] **Second check, independent of the script: confirm no test cutout images are in the diff.** Run
+      `git diff main --stat` and check that none of the preview-only images appear anywhere in it.
+      This reads git's diff rather than the folders the guard knows about, so it also catches an
+      image that was copied somewhere else. The images are the six `.webp` files in
       `src/app/debug/preview-images/` plus `src/app/debug/previewImages.ts` (they are WebP, not PNG).
       A quick filter, which must print only the expected files below:
 

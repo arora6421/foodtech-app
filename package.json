@@ -19,6 +19,8 @@
     "sim": "tsx src/sim/cli.ts",
     "check": "npm run typecheck && npm run lint && npm run test",
     "sim:baseline": "tsx src/sim/baseline.ts",
+    "check:no-preview-images": "node scripts/check-no-preview-images.mjs",
+    "check:merge": "npm run check && npm run check:no-preview-images",
     "test:scripts": "node --test scripts/*.test.mjs",
     "a11y": "node scripts/a11y-audit.mjs"
   },
